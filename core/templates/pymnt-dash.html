@@ -12,9 +12,8 @@
     <h5 class='text-left'>Payments</h5>
 
     <textarea rows="4" class='form-control' readonly>
-      {% for payment in payments %}
-        {{payment.crypto}} - {{payment.received_value}}
-      {% endfor %}
+{% for payment in payments %}{{payment.crypto}} - {{payment.received_value}}
+{% endfor %}
     </textarea>
 
     <h5 class='text-left mt-3 '> Your Product is live at: </h5>
