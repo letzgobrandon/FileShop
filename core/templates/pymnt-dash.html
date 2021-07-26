@@ -10,11 +10,14 @@
     <h2 class='mb-3'>{{object.product_name}} - Sales Overview</h2>
 
     <h5 class='text-left'>Payments</h5>
-
-    <textarea rows="4" class='form-control' readonly>
-{% for payment in payments %}{{payment.crypto}} - {{payment.received_value}}
-{% endfor %}
-    </textarea>
+    <table class="table table-striped table-bordered text-left">
+      {% for payment in payments %}
+      <tr>
+        <td>Amount: {{payment.received_value}} {{payment.crypto}}</td>
+        <td>TXID: {{payment.txid}}</td>
+        <td>Order ID: {{payment.order_id}}</td>
+      </tr>{% endfor %}
+    </table>
 
     <h5 class='text-left mt-3 '> Your Product is live at: </h5>
     <div class="input-group copy-bar">
@@ -27,10 +30,10 @@
 
     <div class="row justify-content-center my-2">
       <div class="form-control col-10 col-md-5 count1 rounded m-2 text-left p-1" readonly>
-        <h5 class='mb-0 text-dark'>Product views: {% get_hit_count for object %}</h5>
+        <p class='mb-0 text-dark'>Product views: {% get_hit_count for object %}</p>
       </div>
       <div class="form-control col-10 col-md-5 count1 rounded m-2 text-left p-1" readonly>
-        <h5 class='mb-0 text-dark'>BTC Balance: {{btc_balance}}</h5>
+        <p class='mb-0 text-dark'>BTC Balance: {{btc_balance}}</p>
       </div>
       {% comment %} <div class="col-4 count1">
         <h5 class='mb-0'>BCH Balance</h5>
