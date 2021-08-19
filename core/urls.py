@@ -1,5 +1,5 @@
 from django.urls import path, include, re_path
-from . import views
+from . import views, api_views
 
 app_name = "core"
 urlpatterns = [
@@ -43,5 +43,13 @@ urlpatterns = [
         "update/payments",
         views.UpdatePaymentStatusCallback.as_view(),
         name="payment_status_update",
+    ),
+
+    ## API URLs Start ##
+
+    path(
+        "api/product",
+        api_views.ProductCreateAPIView.as_view(),
+        name="api_product_create_view",
     ),
 ]

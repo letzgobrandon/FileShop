@@ -4,51 +4,44 @@ body{
     text-align: center;
 }
 
-.file {
-    width: 100%;
-    background: #ddd;
-    border: 1px dashed #888;
-    position: relative;
-    cursor: pointer;
+#preloader {
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    top: 0;
+    left: 0;
+    background-color: #fff;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    transition: 2s all;
 }
 
-.file::before {
-    content: '';
-    position: absolute;
-    font-size: 20px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+#preloader .preloader-text {
+    text-transform: uppercase;
 }
 
-.file::after {
-    content: 'Drag and Drop or Click to Upload (Max Size 5 MB)';
-    position: absolute;
-    color: #808080;
-    font-size: 18px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.logo {
+    font-family: 'Anton', sans-serif;
+    font-size: 54px;
 }
 
-@media only screen and (max-width: 767px) {
-    .file::after {
-        content: 'Tap to Upload Files';
-        left: auto;
-    }
+.about-carousel .carousel-caption {
+    color: #000;
 }
 
-#currencyList{
-    width: 100%;
-    height: 100%;
+.step--counter, .step--label, .step--details {
+    text-align: center;
 }
 
-#file-upload #size,#file-upload #value{
-    color: #333;
+.step--counter {
+    margin-bottom: 0px;
+    line-height: 0.9em;
+    font-size: 4em;
 }
 
-.input-group-text {
-    background-color: #ddd;
-    color: #808080;
+.step--label {
+    text-transform: uppercase;
 }
-
