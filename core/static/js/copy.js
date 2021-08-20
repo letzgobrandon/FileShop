@@ -48,15 +48,9 @@ var app = new Vue({
           data: this.user_data,
           withCredentials: true
         }).then(
-          (res) => {            
+          (res) => {
             this.dashboard_url = window.location.protocol + "//" + window.location.host + res.data.redirect_url
-            this.$bvToast.toast("You'll be redirected to your Product Dashboard in 5 seconds", {
-              ...this.toast_options,
-              title: 'Success'
-            })
-            setTimeout(() => {
-              window.location = res.data.redirect_url
-            }, 5000)
+            window.location = res.data.redirect_url
           },
           (err) => {
             if(!err.response) {
