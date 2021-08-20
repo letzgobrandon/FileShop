@@ -8,52 +8,116 @@
 
 {% block content %}
 
-<div class='container mt-5'>
-    <div class='card px-3'>
-        <h1 class='p-4'>Your Product is now live at:</h1>
-        <div class='px-5'>
-            <div class="input-group copy-bar rounded">
-                <input type="text" class="form-control rounded-left " value="{{public_uri}}" placeholder="Some path" id="copy-input"
-                    readonly>
-                    <button class="btn btn-rounded btn-info copy-btn" onclick="copy(event)">
-                        <span id="copy-content">Copy to Clipboard</span>
-                        <img id="copy-content" src="{% static 'svg/copy_white.png' %}" width=28px height=28px alt="Copy to clipboard">
-                    </button>
-
-            </div>
-        </div>
-
-        <div class="send-mail py-4 text-left w-75">
-            <h5 class="py-1">
-                Enter your email address to receive updates on payments or
-                to withdraw received funds
-            </h5>
-            <div class="">
-                <form class="input-group copy-bar" method="POST" action="{% url 'core:product_seller_email_updates'%}">
-                    {% csrf_token %}
-                    {% if object.email %}
-                    <input type="email" class="form-control rounded-left" aria-label="Recipient's email" aria-describedby="button-addon2"
-                        name="email" required value="{{object.email}}">
-                    {% else %}
-                    <input type="email" class="form-control rounded-left" aria-label="Recipient's email" placeholder="username@example.com"
-                        aria-describedby="button-addon2" name="email" required>
-                    {% endif %}
-                    <button class="btn btn-rounded" type="submit" id="submitbtn">Send mail</button>
-                </form>
-                {% if errors %}
-                    <div class="alert alert-danger">
-                        <strong>{{ errors|escape }}</strong>
-                    </div>
-                {% endif %}
-            </div>
-
-            {% comment %} <button class="go-live" type="submit" id='submitbtn' class='btn'><a style="text-decoration:none;color:black;"
-                    href="{% url 'core:product_info_seller' object.token %}">Go Live!</a></button> {% endcomment %}
-
-        </div>
-    </div>
+{% include 'components/_preloader.html' %}
+<div id="app">
+    <b-container>
+        {% include 'components/_header.html' %}
+        <b-row>
+            <b-col cols="12" md="12" class="mx-auto">
+                <b-card no-body class="overflow-hidden mt-1">
+                    <b-row no-gutters>
+                        <b-col cols="12" md="12" class="px-4 py-2">
+                            <h3>Your Product is now live!</h3>
+                            <b-row class="text-left">
+                                <b-col cols="12" md="12" class="text-center">
+                                    <b-form-group
+                                        label="Public URL"
+                                        label-for="product-url"
+                                    >
+                                        <b-input-group>
+                                            <template #append>
+                                                <b-button variant="info" :disabled="submit_disabled" @click="copy('product-url')">
+                                                    Copy to Clipboard
+                                                    <img id="copy-content" src="{% static 'svg/copy_white.png' %}" width=20px height=20px alt="Copy to clipboard">
+                                                </button>
+                                            </template>
+                                            <b-form-input
+                                                id="product-url"
+                                                value="{{public_uri}}"
+                                                placeholder="Public URL"
+                                                readonly
+                                            ></b-form-input>
+                                        </b-input-group>
+                                    </b-form-group>
+                                </b-col>
+                            </b-row>
+                        </b-col>
+                    </b-row>
+                    <b-row no-gutters class="mb-4">
+                        <b-col class="px-4 py-2">
+                            <b-form @submit.prevent="save">
+                                {% csrf_token %}
+                                <b-row class="text-left">
+                                    <!-- Product Name -->
+                                    <b-col cols="12" md="12" class="text-center">
+                                        <b-form-group
+                                            label="Enter your email address to receive updates on payments or to withdraw received funds"
+                                            label-for="email"
+                                        >
+                                            <b-input-group> 
+                                                <template #append>
+                                                    <b-button 
+                                                        variant="info" 
+                                                        type="submit" 
+                                                        :disabled="submit_disabled"
+                                                    >
+                                                        Send Mail
+                                                    </button>
+                                                </template>
+                                                <b-form-input
+                                                    id="email"
+                                                    v-model="user_data.email"
+                                                    placeholder="e.g. username@example.com"
+                                                    required
+                                                    type="email"
+                                                ></b-form-input>
+                                                <div class="text-danger" v-if="api_errors.name">
+                                                    <small>[[ api_errors.name.join(",") ]]</small>
+                                                </div>
+                                            </b-input-group>
+                                        </b-form-group>
+                                    </b-col>
+                                </b-row>
+                            </b-form>
+                        </b-col>
+                    </b-row>
+                    <b-row no-gutters v-if="dashboard_url">
+                        <b-col cols="12" md="12" class="px-4 py-2">
+                            <b-row class="text-left">
+                                <b-col cols="12" md="12" class="text-center">
+                                    <b-form-group
+                                        label="Dashboard URL"
+                                        label-for="dashboard-url"
+                                        description="Please Bookmark or Save this URL"
+                                    >
+                                        <b-input-group>
+                                            <template #append>
+                                                <b-button variant="info" :disabled="submit_disabled" @click="copy('dashboard-url')">
+                                                    Copy to Clipboard
+                                                    <img id="copy-content" src="{% static 'svg/copy_white.png' %}" width=20px height=20px alt="Copy to clipboard">
+                                                </button>
+                                            </template>
+                                            <b-form-input
+                                                id="dashboard-url"
+                                                :value="dashboard_url"
+                                                placeholder="Public URL"
+                                                readonly
+                                            ></b-form-input>
+                                        </b-input-group>
+                                    </b-form-group>
+                                </b-col>
+                            </b-row>
+                        </b-col>
+                    </b-row>
+                </b-card>
+            </b-col>
+        </b-row>
+    </b-container>
 </div>
 {% endblock content %}
 {% block js %}
+<script>
+    var current_email = {% if object.email %}"{{ object.email }}"{% else %}null{% endif %};
+</script>
 <script type="text/javascript" src="{% static 'js/copy.js' %}"></script>
 {% endblock js %}

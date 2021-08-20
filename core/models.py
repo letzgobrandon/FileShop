@@ -54,6 +54,9 @@ class Product(models.Model):
             return pay_dict["received_value__sum"]
         return 00.00
 
+    def update_email(self, email):
+        self.email = email
+        self.save(update_fields=['email', ])
 
 class File(models.Model):
     product: Product = models.ForeignKey(

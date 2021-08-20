@@ -52,4 +52,9 @@ urlpatterns = [
         api_views.ProductCreateAPIView.as_view(),
         name="api_product_create_view",
     ),
+    path(
+        "api/email_updates",
+        api_views.EmailUpdateAPIView.as_view(),
+        name="api_product_seller_email_updates",
+    ),
 ]

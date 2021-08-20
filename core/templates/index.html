@@ -2,22 +2,10 @@
 {% load static %}
 {% block content %}
 
-<div id="preloader">
-    <div class="preloader-text">
-        <h3 class="logo mb-1">FILE SHOP</h3>
-        Loading...
-    </div>
-</div>
+{% include 'components/_preloader.html' %}
 <div id="app">
     <b-container>
-        <b-row>
-            <b-col cols="12">
-                <h3 class="logo mb-1">FILE SHOP</h3>
-            </b-col>
-            <b-col cols="12">
-                <h5 class="logo-sub">Sell Files Anonymously and Receive BTC or BCH!</h5>
-            </b-col>
-        </b-row>
+        {% include 'components/_header.html' %}
         <b-row>
             <b-col cols="12" md="8" class="mx-auto">
                 <b-card no-body class="overflow-hidden mt-4">
@@ -62,7 +50,6 @@
                         <b-col cols="12" md="12" class="px-4 py-2">
                             <b-form @submit.prevent="save">
                                 {% csrf_token %}
-                                <h3 class='mt-0 mb-3'></h3>
         
                                 <b-row class="text-left">
                                     <!-- Product Name -->
