@@ -57,6 +57,10 @@ class Product(models.Model):
     def update_email(self, email):
         self.email = email
         self.save(update_fields=['email', ])
+    
+    @property
+    def files(self):
+        return File.objects.filter(product=self)
 
 class File(models.Model):
     product: Product = models.ForeignKey(

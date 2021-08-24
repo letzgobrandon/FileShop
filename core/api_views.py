@@ -2,13 +2,15 @@ from django.shortcuts import get_object_or_404, reverse
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
-from rest_framework import generics, serializers, status
+from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 
 from .models import Product, File
 from .serializers import ProductSerializer
-from .utils import email_helper
+from .utils import email_helper, create_payment_helper
+from .blockonomics_utils import exchanged_rate
 
 class ProductCreateAPIView(generics.CreateAPIView):
     model = Product
@@ -89,18 +91,122 @@ class EmailUpdateAPIView(APIView):
             )
         }
 
-        # email_helper(
-        #     self.request,
-        #     product.email,
-        #     self.email_subject,
-        #     self.email_template,
-        #     html_email_template_name=self.email_template,
-        #     extra_email_context=extra_email_context,
-        # )
+        email_helper(
+            self.request,
+            product.email,
+            self.email_subject,
+            self.email_template,
+            html_email_template_name=self.email_template,
+            extra_email_context=extra_email_context,
+        )
 
         data = {
             "redirect_url": reverse("core:product_info_seller", kwargs={"token": product.token})
         }
         
         return Response(data=data)
-    
+
+class ProductPublicAPIView(generics.RetrieveAPIView):
+    model = Product
+    serializer_class = ProductSerializer
+    queryset = model.objects.all()
+
+    def get_object(self, *args, **kwargs):
+        try:
+            return self.get_queryset(*args, **kwargs).get(uid=self.kwargs.get("uid"))
+        except self.model.DoesNotExist:
+            raise NotFound("Product not found")
+
+class CurrencyConverterAPIView(APIView):
+
+    def post(self, *args, **kwargs):
+
+        currency = self.request.data.get('currency', 'USD')
+        price = self.request.data.get('price')
+        crypto = self.request.data.get('crypto')
+
+        if not currency:
+            return Response({
+                "error": {
+                    "currency": ["This field is requried.", ]
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        supported_currencies = ['USD', ]
+        if str(currency).upper() not in supported_currencies:
+            return Response({
+                "error": {
+                    "currency": ["This currency is not yet supported.", ]
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if price == None:
+            return Response({
+                "error": {
+                    "price": ["This field is requried.", ]
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            price = float(price)
+        except ValueError:
+            return Response({
+                "error": {
+                    "price": ["Must be a valid value.", ]
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+        if not crypto:
+            return Response({
+                "error": {
+                    "crypto": ["This field is requried.", ]
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        supported_cryptos = ["BTC", ]
+        if str(crypto).upper() not in supported_cryptos:
+            return Response({
+                "error": {
+                    "crypto": ["This crypto is not yet supported.", ]
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        bits = exchanged_rate(price, crypto, currency)
+        converted_price = bits/pow(10, 8)
+
+        return Response({
+            "bits": bits,
+            "price": converted_price
+        })
+
+class InitiateProductBuyAPIView(APIView):
+
+    def get_object(self, *args, **kwargs):
+        try:
+            return Product.objects.get(uid=self.kwargs.get("uid"))
+        except self.model.DoesNotExist:
+            raise NotFound("Product not found")
+
+    def post(self, *args, **kwargs):
+        
+        crypto = self.request.data.get('crypto', 'BTC')
+        supported_cryptos = ["BTC", ]
+        if str(crypto).upper() not in supported_cryptos:
+            return Response({
+                "error": {
+                    "crypto": ["This crypto is not yet supported.", ]
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        product = self.get_object()
+
+        payment = create_payment_helper(self.request, product, crypto, product.price)
+        
+        return Response({
+            "payment_url": "%s?crypto=%s" % (
+                reverse('core:product_pay_buyer', kwargs={'order_id': payment.order_id}),
+                crypto
+            )
+        })

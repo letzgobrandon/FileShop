@@ -57,4 +57,19 @@ urlpatterns = [
         api_views.EmailUpdateAPIView.as_view(),
         name="api_product_seller_email_updates",
     ),
+    re_path(
+        r"^api/product/(?P<uid>[0-9a-f-]+)$",
+        api_views.ProductPublicAPIView.as_view(),
+        name="api_product_info_buyer",
+    ),
+    re_path(
+        r"^api/product/(?P<uid>[0-9a-f-]+)/initiate-transaction$",
+        api_views.InitiateProductBuyAPIView.as_view(),
+        name="api_product_initiate_transaction",
+    ),
+    re_path(
+        r"^api/currency-converter$",
+        api_views.CurrencyConverterAPIView.as_view(),
+        name="api_currency_converter",
+    ),
 ]

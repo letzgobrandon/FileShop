@@ -138,18 +138,6 @@ class ProductPublicView(HitCountDetailView):
     def get_object(self, **kwargs):
         return get_object_or_404(Product, uid=self.kwargs.get("uid"))
 
-    def get_context_data(self, **kwargs):
-        context = super(ProductPublicView, self).get_context_data(**kwargs)
-        context["usd_price"] = str(self.object.price)
-        context["bits"] = exchanged_rate(self.object.price, "BTC", self.object.currency)
-        context["btc_price"] = context["bits"]/pow(10, 8)
-        product = get_object_or_404(Product, uid=self.kwargs.get("uid"))
-        payment = create_payment_helper(self.request, product, "BTC", self.object.price)
-        context["order_id"] = payment.order_id
-        # context["bch_price"]=str(exchanged_rate(self.object.price,"BTC",self.object.currency))[:6]
-        return context
-
-
 class IntializePayment(generic.View):
     template_name = "buyerPay.html"
 
