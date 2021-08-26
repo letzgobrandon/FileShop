@@ -33,7 +33,7 @@
                 </div>
 
                 <div style="display:none" id="bnomics-order-expired-wrapper" >
-                    <h3 class="warning bnomics-status-warning">Payment Expired</h3><br>
+                    <h3 class="warning bnomics-status-warning">Order Expired</h3><br>
                     <p class="click-to-try-again cursor-pointer"><a onClick="window.location.reload()">Click here to try again</a></p>
                 </div>
 
@@ -49,8 +49,8 @@
 
 <script type="text/javascript" id="data_script">
     var address = "{{address}}";
-    var url = "{% url 'core:payment_processed_buyer' %}";
-    var payment_id = "{{payment_id}}";
+    var url = "{% url 'core:order_processed_buyer' %}";
+    var order_id = "{{order_id}}";
 </script>
 <script type="text/javascript">
     var accept_payments = true;

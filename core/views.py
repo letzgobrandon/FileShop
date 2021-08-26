@@ -1,18 +1,16 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
-from .models import Payment, File, Product
+from .models import Order, File, Product
 from .forms import ProductForm, ProductEmailForm
 from django.views import generic
-from django.views.generic.detail import SingleObjectMixin
 from hitcount.views import HitCountDetailView
-from django.http.response import Http404, HttpResponse, JsonResponse
-from .blockonomics_utils import create_payment, exchanged_rate, exchanged_rate_to_usd
+from django.http.response import Http404, HttpResponse
 import requests
 import json
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
-from .utils import zipFiles, email_helper, create_payment_helper, check_session_validity
+from .utils import zipFiles, email_helper
 from django.db.models import Prefetch
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # Create your views here.
 
@@ -111,7 +109,7 @@ class ProductSellerView(generic.DetailView):
         if not products.exists():
             raise Http404("Product with given token does not exist")
 
-        product = products.prefetch_related("payments").first()
+        product = products.prefetch_related("orders").first()
         return product
 
     def get_context_data(self, **kwargs):
@@ -121,8 +119,8 @@ class ProductSellerView(generic.DetailView):
         context["public_uri"] = self.request.build_absolute_uri(
             reverse("core:product_info_buyer", kwargs={"uid": context["object"].uid})
         )
-        context["payments"] = context["object"].payments.filter(
-            status_of_transaction=Payment.StatusChoices.CONFIMED
+        context["orders"] = context["object"].orders.filter(
+            status_of_transaction=Order.StatusChoices.CONFIMED
         )
         return context
 
@@ -138,7 +136,7 @@ class ProductPublicView(HitCountDetailView):
     def get_object(self, **kwargs):
         return get_object_or_404(Product, uid=self.kwargs.get("uid"))
 
-class IntializePayment(generic.View):
+class IntializeOrder(generic.View):
     template_name = "buyerPay.html"
 
     @method_decorator(never_cache)
@@ -149,13 +147,13 @@ class IntializePayment(generic.View):
         if crypto not in ["BTC"]:
             return HttpResponse("Invalid crypto currency,please use BTC", status=400)
 
-        address, expected_value, payment, usd_price = None, None, None, None
+        address, expected_value, order, usd_price = None, None, None, None
         try:
-            payment = get_object_or_404(Payment, order_id=kwargs["order_id"])
-            product = payment.product
-            address = payment.address
-            expected_value = float(payment.expected_value)
-            usd_price = float(payment.usd_price)
+            order = get_object_or_404(Order, order_id=kwargs["order_id"])
+            product = order.product
+            address = order.address
+            expected_value = float(order.expected_value)
+            usd_price = float(order.usd_price)
             request.session["last_order"] = datetime.now().timestamp()
         except (ValueError, Http404, KeyError) as e:  # invalid session
             return HttpResponse(e.response.text)
@@ -165,11 +163,11 @@ class IntializePayment(generic.View):
             repr(e)
             return HttpResponse("Some error occured please try again", status=400)
 
-        request.session["payment"] = {
+        request.session["order"] = {
             "address": address,
             "expected_value": expected_value,
             "product": product.pk,
-            "payment_id": payment.id,
+            "order_id": order.id,
         }
         request.session.modified = True 
         context = {
@@ -178,115 +176,115 @@ class IntializePayment(generic.View):
             "usd_price": usd_price,
             "crypto": crypto,
             "last_order": request.session["last_order"],
-            "payment_id": payment.id,
+            "order_id": order.id,
         }
 
         return render(request, self.template_name, context=context)
 
 
-class PaymentConfirmCallbackView(generic.View):
+class OrderConfirmCallbackView(generic.View):
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
         status_of_transaction = data.get("status", None)
-        payment_id = data.get("payment_id", None)
-        if status_of_transaction is None or payment_id is None:
+        order_id = data.get("order_id", None)
+        if status_of_transaction is None or order_id is None:
             return HttpResponse("Invalid data", status=400)
 
-        payment = get_object_or_404(Payment, pk=int(payment_id))
+        order = get_object_or_404(Order, pk=int(order_id))
 
-        if status_of_transaction >= payment.status_of_transaction:
-            payment.status_of_transaction = max(
-                payment.status_of_transaction, status_of_transaction
+        if status_of_transaction >= order.status_of_transaction:
+            order.status_of_transaction = max(
+                order.status_of_transaction, status_of_transaction
             )
-            payment.save()
+            order.save()
             return redirect(
                 reverse(
-                    "core:payment_info_buyer", kwargs={"order_id": payment.order_id}
+                    "core:order_info_buyer", kwargs={"order_id": order.order_id}
                 )
             )
 
-        return HttpResponse("Payment status isn't changed")
+        return HttpResponse("Order status isn't changed")
 
 
-class PaymentStatusView(generic.View):
-    payment_status_view = {
+class OrderStatusView(generic.View):
+    order_status_view = {
         0: "confirmation.html",
         1: "confirmation.html",
         2: "payStatus.html",
     }
 
-    def get_payment(self, **kwargs):
-        payment = get_object_or_404(Payment, order_id=self.kwargs.get("order_id"))
-        return payment
+    def get_order(self, **kwargs):
+        order = get_object_or_404(Order, order_id=self.kwargs.get("order_id"))
+        return order
 
     @method_decorator(never_cache)
     def get(self, request, *args, **kwargs):
-        payment = self.get_payment(**kwargs)
+        order = self.get_order(**kwargs)
         try:
-            request.session["payment"][
+            request.session["order"][
                 "status_of_transaction"
-            ] = payment.status_of_transaction
+            ] = order.status_of_transaction
             request.session.modified = True
         except KeyError:
-            request.session["payment"] = {
-                "status_of_transaction": payment.status_of_transaction
+            request.session["order"] = {
+                "status_of_transaction": order.status_of_transaction
             }
 
         context = {
-            "payment": payment,
+            "order": order,
             "download_uri": request.build_absolute_uri(
                 reverse(
-                    "core:payment_info_buyer", kwargs={"order_id": payment.order_id}
+                    "core:order_info_buyer", kwargs={"order_id": order.order_id}
                 )
             ),
         }
 
         return render(
             request,
-            self.payment_status_view[payment.status_of_transaction],
+            self.order_status_view[order.status_of_transaction],
             context=context,
         )
 
 
 class DownloadFiles(generic.View):
-    def get_payment(self, **kwargs):
-        payments = Payment.objects.filter(order_id=kwargs["order_id"])
-        if not payments.exists():
-            raise Http404("Payment with given order id does not exist")
+    def get_order(self, **kwargs):
+        orders = Order.objects.filter(order_id=kwargs["order_id"])
+        if not orders.exists():
+            raise Http404("Order with given order id does not exist")
 
-        payment = (
-            payments.select_related("product")
+        order = (
+            orders.select_related("product")
             .prefetch_related(
                 Prefetch(
                     "product__files",
                     queryset=File.objects.filter(
-                        product__payments__order_id=kwargs["order_id"]
+                        product__orders__order_id=kwargs["order_id"]
                     ),
                     to_attr="files_list",
                 )
             )
             .first()
         )
-        return payment
+        return order
 
     def get(self, request, *args, **kwargs):
 
-        payment = self.get_payment(**kwargs)
+        order = self.get_order(**kwargs)
 
         try:
-            status_of_transaction = request.session["payment"]["status_of_transaction"]
+            status_of_transaction = request.session["order"]["status_of_transaction"]
             if status_of_transaction == 2:
-                files = payment.product.files_list
+                files = order.product.files_list
                 zipped_file = zipFiles(files)
                 response = HttpResponse(
                     zipped_file, content_type="application/octet-stream"
                 )
                 response[
                     "Content-Disposition"
-                ] = f"attachment; filename={payment.product.product_name}.zip"
+                ] = f"attachment; filename={order.product.product_name}.zip"
                 return response
             else:
-                return HttpResponse("Payment is being processed")
+                return HttpResponse("Order is being processed")
         except KeyError:
             return HttpResponse("Session may have expired try refreshing", status=400)
         except Exception as e:
@@ -294,31 +292,31 @@ class DownloadFiles(generic.View):
             return HttpResponse(repr(e), status=400)
 
 
-class UpdatePaymentStatusCallback(generic.View):
+class UpdateOrderStatusCallback(generic.View):
     email_template = "emails/payment.html"
     email_subject = "emails/product_page.txt"
     extra_email_context = {}
 
     def get(self, request, *args, **kwargs):
-        payment = get_object_or_404(Payment, address=request.GET["addr"])
-        payment.status_of_transaction = max(
-            payment.status_of_transaction, int(request.GET["status"])
+        order = get_object_or_404(Order, address=request.GET["addr"])
+        order.status_of_transaction = max(
+            order.status_of_transaction, int(request.GET["status"])
         )
-        payment.txid = request.GET["txid"]
+        order.txid = request.GET["txid"]
         if int(request.GET["status"]) == 2:
-            payment.received_value = float(request.GET["value"]) / 1e8
+            order.received_value = float(request.GET["value"]) / 1e8
             self.extra_email_context["track_uri"] = self.request.build_absolute_uri(
                 reverse(
-                    "core:product_info_seller", kwargs={"token": payment.product.token}
+                    "core:product_info_seller", kwargs={"token": order.product.token}
                 )
             )
             email_helper(
                 request,
-                payment.product.email,
+                order.product.email,
                 self.email_subject,
                 self.email_template,
                 html_email_template_name=self.email_template,
                 extra_email_context=self.extra_email_context,
             )
-        payment.save()
+        order.save()
         return HttpResponse(200)

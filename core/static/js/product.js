@@ -141,7 +141,7 @@ var app = new Vue({
           data: payload
         }).then(
           (res) => {
-            window.location = res.data.payment_url
+            window.location = res.data.order_url
           },
           (err) => {
             if(!err.response) {

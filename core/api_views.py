@@ -9,7 +9,7 @@ from rest_framework.exceptions import NotFound
 
 from .models import Product, File
 from .serializers import ProductSerializer
-from .utils import email_helper, create_payment_helper
+from .utils import email_helper, create_order_helper
 from .blockonomics_utils import exchanged_rate
 
 class ProductCreateAPIView(generics.CreateAPIView):
@@ -202,11 +202,11 @@ class InitiateProductBuyAPIView(APIView):
 
         product = self.get_object()
 
-        payment = create_payment_helper(self.request, product, crypto, product.price)
+        order = create_order_helper(self.request, product, crypto, product.price)
         
         return Response({
-            "payment_url": "%s?crypto=%s" % (
-                reverse('core:product_pay_buyer', kwargs={'order_id': payment.order_id}),
+            "order_url": "%s?crypto=%s" % (
+                reverse('core:product_pay_buyer', kwargs={'order_id': order.order_id}),
                 crypto
             )
         })

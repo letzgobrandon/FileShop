@@ -21,18 +21,18 @@ urlpatterns = [
     ),
     re_path(
         r"^checkout/(?P<order_id>\w+)$",
-        views.IntializePayment.as_view(),
+        views.IntializeOrder.as_view(),
         name="product_pay_buyer",
     ),
     re_path(
-        r"^payment_processed/$",
-        views.PaymentConfirmCallbackView.as_view(),
-        name="payment_processed_buyer",
+        r"^order_processed/$",
+        views.OrderConfirmCallbackView.as_view(),
+        name="order_processed_buyer",
     ),
     re_path(
-        r"^payment/(?P<order_id>\w+)/$",
-        views.PaymentStatusView.as_view(),
-        name="payment_info_buyer",
+        r"^order/(?P<order_id>\w+)/$",
+        views.OrderStatusView.as_view(),
+        name="order_info_buyer",
     ),
     re_path(
         r"^(?P<order_id>\w+)/download/$",
@@ -40,9 +40,9 @@ urlpatterns = [
         name="product_download_buyer",
     ),
     path(
-        "update/payments",
-        views.UpdatePaymentStatusCallback.as_view(),
-        name="payment_status_update",
+        "update/orders",
+        views.UpdateOrderStatusCallback.as_view(),
+        name="order_status_update",
     ),
 
     ## API URLs Start ##

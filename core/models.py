@@ -38,7 +38,7 @@ class Product(models.Model):
 
     @property
     def btc_balance(self) -> float:
-        pay_dict: Optional[Dict] = self.payments.filter(
+        pay_dict: Optional[Dict] = self.orders.filter(
             crypto="BTC", status_of_transaction=2
         ).aggregate(models.Sum("received_value"))
         if pay_dict["received_value__sum"] is not None:
@@ -47,7 +47,7 @@ class Product(models.Model):
 
     @property
     def bch_balance(self) -> float:
-        pay_dict: Optional[Dict] = self.payments.filter(
+        pay_dict: Optional[Dict] = self.orders.filter(
             crypto="BCH", status_of_transaction=2
         ).aggregate(models.Sum("received_value"))
         if pay_dict["received_value__sum"] is not None:
@@ -71,7 +71,7 @@ class File(models.Model):
     file_name: Optional[str] = models.TextField(null=True)
 
 
-class Payment(models.Model):
+class Order(models.Model):
     class StatusChoices(models.IntegerChoices):
         NOT_STARTED = -1
         UNCONFIRMED = 0
@@ -99,7 +99,7 @@ class Payment(models.Model):
     address: str = models.TextField(null=True)
     order_id: str = models.TextField(null=True)
     product: Product = models.ForeignKey(
-        Product, related_name="payments", on_delete=models.CASCADE
+        Product, related_name="orders", on_delete=models.CASCADE
     )
     timestamp = models.DateTimeField(auto_now=True)
     crypto = models.CharField(max_length=255, choices=CryptioChoices.choices, null=True)
@@ -107,4 +107,4 @@ class Payment(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.order_id = get_random_string(length=32)
-        return super(Payment, self).save(*args, **kwargs)
+        return super(Order, self).save(*args, **kwargs)

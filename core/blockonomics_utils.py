@@ -22,7 +22,7 @@ def exchanged_rate_to_usd(amount, crypto, currency) -> float:
     return round (amount * response["price"], 2)
 
 
-def create_payment(product, crypto):
+def create_order(product, crypto):
     url = f"{base_url}/new_address"
     response = requests.post(url, headers=headers)
     response.raise_for_status()
