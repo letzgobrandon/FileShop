@@ -1,6 +1,5 @@
 var app = new Vue({
-  el: '#app',
-  delimiters: ['[[', ']]'], // Override Conflicting Delimiters because of DTL
+  ...common_vue_config,
   data: {
     product: {
       name: null,
@@ -11,13 +10,6 @@ var app = new Vue({
     files: [],
     files_stats: {},
     
-    toast_options: {
-      autoHideDelay: 5000,
-      appendToast: false,
-      variant: 'danger',
-      toaster: 'b-toaster-bottom-center'
-    },
-
     currency_options: [
       { value: 'USD', text: 'USD' },
     ],
@@ -26,10 +18,7 @@ var app = new Vue({
     api_errors: {}
   },
   mounted() {
-    document.getElementById("preloader").style.top = "-120vh"
-    setTimeout(() => {
-      document.getElementById("preloader").style.display = "none"
-    }, 2000)
+    hide_preloader()
   },
   methods: {
     filesChanged(files) {
@@ -74,40 +63,27 @@ var app = new Vue({
         payload.append('files', v)
       })
 
-      
-      axios({
+      send_request({
         method: 'POST',
         url: apiendpoints.product_create,
         data: payload,
-        withCredentials: true,
         headers: {
           "Content-Type": "multipart/form-data"
         }
       }).then(
         (res) => {
           this.submit_disabled = false
-          window.location = res.data.redirect_url
+          window.location = static_urls.email_update + `?uid=${res.uuid}&token=${res.token}`
         },
         (err) => {
-          if(!err.response) {
-            this.$bvToast.toast('A Network Error Occurred. Please check your internet connection and try Again.', {
-              ...this.toast_options,
-              title: 'Network Error'
-            })
+          let response = err.response
+          if(response.status == 400) {
+            this.api_errors = response.data.error
           } else {
-            let response = err.response
-            if(response.status == 400) {
-              this.api_errors = response.data.error
-              this.$bvToast.toast('Please fix the errors and try again', {
-                title: 'Error',
-                ...this.toast_options,
-              })
-            } else {
-              this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
-                title: 'Error',
-                ...this.toast_options,
-              })
-            }
+            this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
+              title: 'Error',
+              ...this.toast_options,
+            })
           }
           this.submit_disabled = false
         }

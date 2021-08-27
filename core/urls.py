@@ -1,4 +1,4 @@
-from django.urls import path, include, re_path
+from django.urls import path, re_path
 from . import views, api_views
 
 app_name = "core"
@@ -20,7 +20,7 @@ urlpatterns = [
         name="product_info_buyer",
     ),
     re_path(
-        r"^checkout/(?P<order_id>\w+)$",
+        r"^checkout/(?P<order_uid>[0-9a-f-]+)$",
         views.IntializeOrder.as_view(),
         name="product_pay_buyer",
     ),
@@ -30,7 +30,7 @@ urlpatterns = [
         name="order_processed_buyer",
     ),
     re_path(
-        r"^order/(?P<order_id>\w+)/$",
+        r"^order/(?P<order_uid>[0-9a-f-]+)/$",
         views.OrderStatusView.as_view(),
         name="order_info_buyer",
     ),
@@ -47,29 +47,34 @@ urlpatterns = [
 
     ## API URLs Start ##
 
-    path(
-        "api/product",
+    re_path(
+        r"^api/product$",
         api_views.ProductCreateAPIView.as_view(),
-        name="api_product_create_view",
-    ),
-    path(
-        "api/email_updates",
-        api_views.EmailUpdateAPIView.as_view(),
-        name="api_product_seller_email_updates",
+        name="api_product_create",
     ),
     re_path(
         r"^api/product/(?P<uid>[0-9a-f-]+)$",
-        api_views.ProductPublicAPIView.as_view(),
-        name="api_product_info_buyer",
+        api_views.ProductAPIView.as_view(),
+        name="api_product",
     ),
     re_path(
-        r"^api/product/(?P<uid>[0-9a-f-]+)/initiate-transaction$",
+        r"^api/order$",
         api_views.InitiateProductBuyAPIView.as_view(),
-        name="api_product_initiate_transaction",
+        name="api_product_order",
     ),
     re_path(
-        r"^api/currency-converter$",
-        api_views.CurrencyConverterAPIView.as_view(),
-        name="api_currency_converter",
+        r"^api/order/(?P<uid>[0-9a-f-]+)$",
+        api_views.OrderAPIView.as_view(),
+        name="api_order",
     ),
+    re_path(
+        r"^api/order/(?P<uid>[0-9a-f-]+)/callback$",
+        api_views.OrderConfirmCallbackAPIView.as_view(),
+        name="api_order_callback",
+    ),
+    # re_path(
+    #     r"^api/currency-converter$",
+    #     api_views.CurrencyConverterAPIView.as_view(),
+    #     name="api_currency_converter",
+    # ),
 ]

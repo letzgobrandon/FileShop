@@ -97,14 +97,8 @@ class Order(models.Model):
     )
     txid: Optional[str] = models.TextField(null=True)
     address: str = models.TextField(null=True)
-    order_id: str = models.TextField(null=True)
     product: Product = models.ForeignKey(
         Product, related_name="orders", on_delete=models.CASCADE
     )
     timestamp = models.DateTimeField(auto_now=True)
     crypto = models.CharField(max_length=255, choices=CryptioChoices.choices, null=True)
-
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.order_id = get_random_string(length=32)
-        return super(Order, self).save(*args, **kwargs)

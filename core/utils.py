@@ -82,7 +82,7 @@ def check_session_validity(request, product):
         raise ValueError("Invalid session value refreshing the sesion")
 
 
-def create_order_helper(request, product, crypto, usd_price):
+def create_order_helper(request, product, crypto, usd_price) -> Order:
     address, expected_value = create_order(product, crypto)
     usd_price = exchanged_rate_to_usd(expected_value, crypto, "USD")
     order = Order.objects.create(

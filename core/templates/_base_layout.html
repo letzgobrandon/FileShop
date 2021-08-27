@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+    {% include 'components/_preloader.html' %}
+    <div id="app">
+        <b-container>
+            {% include 'components/_header.html' %}
+            <b-row>
+                <b-col cols="12" md="{% block content_width_cols %}8{%endblock %}" class="mx-auto">
+                    <b-card no-body class="overflow-hidden mt-4">
+                        <b-row no-gutters>
+                            <!-- Left Carousel -->
+                            <!-- <b-col cols="12" md="4" class="px-0">
+                                {% block content_left %}{% endblock %}
+                                <b-carousel
+                                    id="carousel-1"
+                                    :interval="3000"
+                                    background="#fff"
+                                    class="h-100 about-carousel"
+                                >
+                                    <b-carousel-slide img-blank>
+                                        <h1 class="step--counter">1</h1>
+                                        <div class="step--label">Step</div>
+                                        <p class="step--details">Create a Product using form on the side.</p>
+                                    </b-carousel-slide>
+                                    <b-carousel-slide img-blank>
+                                        <h1 class="step--counter">2</h1>
+                                        <div class="step--label">Step</div>
+                                        <p class="step--details">Get a Unique Link for your product. Share the link with your buyers to purchase.</p>
+                                    </b-carousel-slide>
+                                    <b-carousel-slide img-blank>
+                                        <h1 class="step--counter">3</h1>
+                                        <div class="step--label">Step</div>
+                                        <p class="step--details">Share your Email or Bookmark the Product Management Link to see the Orders and Request Withdrawls.</p>
+                                    </b-carousel-slide>
+                                    <b-carousel-slide img-blank>
+                                        <h1 class="step--counter">4</h1>
+                                        <div class="step--label">Step</div>
+                                        <p class="step--details">Submit Withdrawls using Product Dashboard and receive it directly in your Wallet!</p>
+                                    </b-carousel-slide>
+                                    <b-carousel-slide img-blank>
+                                        <h1 class="step--counter">Voila</h1>
+                                        <p class="step--details">Completely Anonymous and Secure!</p>
+                                    </b-carousel-slide>
+                                </b-carousel>
+                            </b-col> -->
+                            <!-- Left Carousel Ends -->
+
+                            <!-- Main Form -->
+                            <b-col cols="12" md="12" class="{% block content_right_class %}px-4 py-2{% endblock %}">
+                                {% block content_right %}{% endblock %}
+                            </b-col>
+                        </b-row>
+                    </b-card>
+                </b-col>
+            </b-row>
+        </b-container>
+    </div>
+{% endblock %}

@@ -1,21 +1,13 @@
 var app = new Vue({
-    el: '#app',
-    delimiters: ['[[', ']]'], // Override Conflicting Delimiters because of DTL
+    ...common_vue_config,
     data: {
-      toast_options: {
-        autoHideDelay: 5000,
-        appendToast: false,
-        variant: 'success',
-        toaster: 'b-toaster-bottom-center'
-      },
-
       product_uid: null,
       product: null,
 
       selected_crypto: {
         crypto: 'BTC',
-        details: {},
-        loading: true
+        // details: {},
+        loading: false
       },
 
       crypto_options: [
@@ -31,10 +23,7 @@ var app = new Vue({
       }
     },
     mounted() {
-      document.getElementById("preloader").style.top = "-120vh"
-      setTimeout(() => {
-        document.getElementById("preloader").style.display = "none"
-      }, 2000)
+      hide_preloader()
 
       this.product_uid = this.get_product_uid_from_url()
 
@@ -43,10 +32,10 @@ var app = new Vue({
       
     },
     watch: {
-      'selected_crypto.crypto' (newV, oldV) {
-        if(newV == oldV) return
-        this.load_crypto_converstion_rates()
-      }
+      // 'selected_crypto.crypto' (newV, oldV) {
+      //   if(newV == oldV) return
+      //   this.load_crypto_converstion_rates()
+      // }
     },
     methods: {
       get_product_uid_from_url() {
@@ -59,71 +48,53 @@ var app = new Vue({
       },
       load_data() {
         this.loading = true
-        axios({
+        send_request({
           method: 'GET',
-          url: apiendpoints.product_get + this.product_uid,
-          withCredentials: true
+          url: apiendpoints.product_get + "/" + this.product_uid
         }).then(
           (res) => {
-            this.product = res.data
+            this.product = res
             this.loading = false
-            if(this.selected_crypto.crypto)
-              this.load_crypto_converstion_rates()
+            // if(this.selected_crypto.crypto)
+            //   this.load_crypto_converstion_rates()
           },
           (err) => {
-            if(!err.response) {
-              this.$bvToast.toast('A Network Error Occurred. Please check your internet connection and try Again.', {
-                ...this.toast_options,
-                title: 'Network Error',
-                variant: 'danger'
-              })
-            } else {
-              this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
-                ...this.toast_options,
-                title: 'Error',
-                variant: 'danger'
-              })
-            }
+            this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
+              ...common_toast_options,
+              title: 'Error',
+              variant: 'danger'
+            })
           }
         )
       },
-      load_crypto_converstion_rates() {
-        if(!this.selected_crypto.crypto) return
+      // load_crypto_converstion_rates() {
+      //   if(!this.selected_crypto.crypto) return
         
-        this.selected_crypto.loading = true
+      //   this.selected_crypto.loading = true
 
-        let payload = {
-          currency: this.product.currency,
-          price: this.product.price,
-          crypto: this.selected_crypto.crypto
-        }
-        axios({
-          method: 'POST',
-          url: apiendpoints.currency_converter,
-          withCredentials: true,
-          data: payload
-        }).then(
-          (res) => {
-            this.selected_crypto.details = res.data
-            this.selected_crypto.loading = false
-          },
-          (err) => {
-            if(!err.response) {
-              this.$bvToast.toast('A Network Error Occurred. Please check your internet connection and try Again.', {
-                ...this.toast_options,
-                title: 'Network Error',
-                variant: 'danger'
-              })
-            } else {
-              this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
-                ...this.toast_options,
-                title: 'Error',
-                variant: 'danger'
-              })
-            }
-          }
-        )
-      },
+      //   let payload = {
+      //     currency: this.product.currency,
+      //     price: this.product.price,
+      //     crypto: this.selected_crypto.crypto
+      //   }
+      //   send_request({
+      //     method: 'POST',
+      //     url: apiendpoints.currency_converter,
+      //     data: payload
+      //   }).then(
+      //     (res) => {
+      //       this.selected_crypto.details = res
+      //       this.selected_crypto.loading = false
+      //     },
+      //     (err) => {
+      //       this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
+      //         ...common_toast_options,
+      //         title: 'Error',
+      //         variant: 'danger'
+      //       })
+      //     }
+      //   )
+      // },
       initiate_transaction() {
 
         if(!this.selected_crypto.crypto) return
@@ -131,32 +102,25 @@ var app = new Vue({
         this.buying_info.loading = true
 
         let payload = {
-          crypto: this.selected_crypto.crypto
+          crypto: this.selected_crypto.crypto,
+          product_uid: this.product_uid
         }
 
-        axios({
+        send_request({
           method: 'POST',
-          url: apiendpoints.product_get + this.product_uid + "/initiate-transaction",
-          withCredentials: true,
+          url: apiendpoints.order_create,
           data: payload
         }).then(
           (res) => {
-            window.location = res.data.order_url
+            let order_uid = res.order_uuid
+            window.location.href = `/${static_urls.checkout.replace(':order_uuid', order_uid)}`
           },
           (err) => {
-            if(!err.response) {
-              this.$bvToast.toast('A Network Error Occurred. Please check your internet connection and try Again.', {
-                ...this.toast_options,
-                title: 'Network Error',
-                variant: 'danger'
-              })
-            } else {
-              this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
-                ...this.toast_options,
-                title: 'Error',
-                variant: 'danger'
-              })
-            }
+            this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
+              ...common_toast_options,
+              title: 'Error',
+              variant: 'danger'
+            })
           }
         )
       }

@@ -1,16 +1,15 @@
-from django.shortcuts import render, redirect, reverse, get_object_or_404
-from .models import Order, File, Product
-from .forms import ProductForm, ProductEmailForm
-from django.views import generic
-from hitcount.views import HitCountDetailView
-from django.http.response import Http404, HttpResponse
-import requests
 import json
-from django.views.decorators.cache import never_cache
-from django.utils.decorators import method_decorator
-from .utils import zipFiles, email_helper
+
 from django.db.models import Prefetch
-from datetime import datetime
+from django.http.response import Http404, HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.utils.decorators import method_decorator
+from django.views import generic
+from django.views.decorators.cache import never_cache
+
+from .forms import ProductForm
+from .models import File, Order, Product
+from .utils import email_helper, zipFiles
 
 # Create your views here.
 
@@ -23,6 +22,7 @@ class ProductCreateView(generic.View):
     template_name = "index.html"
 
     def post(self, request, *args, **kwargs):
+        """Depreciated, in favor of REST Endpoint"""
         product_form = self.form_class(request.POST or None)
         if product_form.is_valid():
             product = product_form.save()
@@ -41,64 +41,9 @@ class ProductCreateView(generic.View):
         return render(request, "index.html")
 
 
-class ProductEmailUpdatesView(generic.View):
+class ProductEmailUpdatesView(generic.TemplateView):
+
     template_name = "sell-email.html"
-    model = Product
-    form_class = ProductEmailForm
-    email_template = "emails/product_page.html"
-    email_subject = "emails/product_page.txt"
-    extra_email_context = {}
-
-    def get_object(self, **kwargs):
-        return get_object_or_404(
-            Product, pk=self.request.session.get("product_id", None)
-        )
-
-    def get_context_data(self, **kwargs):
-        product = self.get_object(**kwargs)
-        context = {}
-        context["object"] = product
-        context["public_uri"] = self.request.build_absolute_uri(
-            reverse("core:product_info_buyer", kwargs={"uid": context["object"].uid})
-        )
-        return context
-
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        return render(request, self.template_name, context=context)
-
-    def post(self, request, *args, **kwargs):
-        product = self.get_object(**kwargs)
-        product_form = self.form_class(request.POST, instance=product)
-        context = self.get_context_data(**kwargs)
-        
-        if product_form.is_valid():
-            product_form.save()
-        else:
-            context["errors"] = product_form.errors
-            return render(
-                request, self.template_name, context=context
-            )
-
-        
-        self.extra_email_context["track_uri"] = self.request.build_absolute_uri(
-            reverse("core:product_info_seller", kwargs={"token": product.token})
-        )
-        self.extra_email_context["public_uri"] = self.request.build_absolute_uri(
-            reverse("core:product_info_buyer", kwargs={"uid": context["object"].uid})
-        )
-        email_helper(
-            request,
-            product.email,
-            self.email_subject,
-            self.email_template,
-            html_email_template_name=self.email_template,
-            extra_email_context=self.extra_email_context,
-        )
-        return redirect(
-            reverse("core:product_info_seller", kwargs={"token": product.token})
-        )
-
 
 class ProductSellerView(generic.DetailView):
     template_name = "pymnt-dash.html"
@@ -128,59 +73,13 @@ class ProductSellerView(generic.DetailView):
 # ===================================================== BUYER VIEW ============================================
 
 
-class ProductPublicView(HitCountDetailView):
-    count_hit = True
+class ProductPublicView(generic.TemplateView):
+
     template_name = "buyerLanding.html"
-    model = Product
 
-    def get_object(self, **kwargs):
-        return get_object_or_404(Product, uid=self.kwargs.get("uid"))
+class IntializeOrder(generic.TemplateView):
 
-class IntializeOrder(generic.View):
     template_name = "buyerPay.html"
-
-    @method_decorator(never_cache)
-    def get(self, request, *args, **kwargs):
-        # product = get_object_or_404(Product, uid=kwargs["uid"])
-        crypto = request.GET.get("crypto", None)
-        # if crypto not in ["BTC","BCH"]:
-        if crypto not in ["BTC"]:
-            return HttpResponse("Invalid crypto currency,please use BTC", status=400)
-
-        address, expected_value, order, usd_price = None, None, None, None
-        try:
-            order = get_object_or_404(Order, order_id=kwargs["order_id"])
-            product = order.product
-            address = order.address
-            expected_value = float(order.expected_value)
-            usd_price = float(order.usd_price)
-            request.session["last_order"] = datetime.now().timestamp()
-        except (ValueError, Http404, KeyError) as e:  # invalid session
-            return HttpResponse(e.response.text)
-        except requests.exceptions.RequestException as e:  # Exception at blockonomics api
-            return HttpResponse(e.response.text)
-        except Exception as e:
-            repr(e)
-            return HttpResponse("Some error occured please try again", status=400)
-
-        request.session["order"] = {
-            "address": address,
-            "expected_value": expected_value,
-            "product": product.pk,
-            "order_id": order.id,
-        }
-        request.session.modified = True 
-        context = {
-            "address": address,
-            "expected_value": expected_value,
-            "usd_price": usd_price,
-            "crypto": crypto,
-            "last_order": request.session["last_order"],
-            "order_id": order.id,
-        }
-
-        return render(request, self.template_name, context=context)
-
 
 class OrderConfirmCallbackView(generic.View):
     def post(self, request, *args, **kwargs):
@@ -214,7 +113,7 @@ class OrderStatusView(generic.View):
     }
 
     def get_order(self, **kwargs):
-        order = get_object_or_404(Order, order_id=self.kwargs.get("order_id"))
+        order = get_object_or_404(Order, uid=self.kwargs.get("order_uid"))
         return order
 
     @method_decorator(never_cache)
