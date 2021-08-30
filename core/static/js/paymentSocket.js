@@ -5,11 +5,11 @@ var socket = new WebSocket("wss://www.blockonomics.co/payment/"+ address);
 const paymentStatusUpdate = (status)=>{
   (async()=>{
     const websiteUrl = "http://fileshop.online"; //Change this for your website
-    let payment_id=data["payment_id"];
+    let order_id=data["order_id"];
     try{
     const response = await fetch(websiteUrl + data.url,{
       "method":"POST",
-      "body":JSON.stringify({status,payment_id}),
+      "body":JSON.stringify({status,order_id}),
       "headers": {
             "Accept": "application/json , text/plain ,*/*",
             "Content-type": "application/json",

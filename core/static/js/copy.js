@@ -1,85 +1,69 @@
 var app = new Vue({
-    el: '#app',
-    delimiters: ['[[', ']]'], // Override Conflicting Delimiters because of DTL
+    ...common_vue_config,
     data: {
-      toast_options: {
-        autoHideDelay: 5000,
-        appendToast: false,
-        variant: 'success',
-        toaster: 'b-toaster-bottom-center'
-      },
 
+      product_uid: null,
+      product_token: null,
       user_data: {
-        email: current_email // Assumes it is present in scope
+        email: null,
       },
   
-      submit_disabled: false,
+      submit_disabled: true,
       api_errors: {},
 
       dashboard_url: null
     },
+    computed: {
+      public_url() {
+        if(!this.product_uid) return null
+
+        return window.location.protocol + "//" + window.location.host + "/" + static_urls.product_public_url.replace(":uid", this.product_uid)
+      }
+    },
     mounted() {
-      document.getElementById("preloader").style.top = "-120vh"
-      setTimeout(() => {
-        document.getElementById("preloader").style.display = "none"
-      }, 2000)
+      hide_preloader()
+      this.get_data()
     },
     methods: {
-      copy(id) {
-        const copyText = document.getElementById(id);
-      
-        /* Select the text field */
-        copyText.select();
-        copyText.setSelectionRange(0, 99999); /* For mobile devices */
-      
-        /* Copy the text inside the text field */
-        document.execCommand("copy");
-      
-        this.$bvToast.toast('URL Copied Succesfully!', {
-          title: 'Success',
-          ...this.toast_options,
-        })
+      get_data() {
+
+        let query_params = new URLSearchParams(window.location.search)
+        
+        this.product_uid = query_params.get('uid')
+        this.product_token = query_params.get('token')
+        this.submit_disabled = false
       },
       save() {
 
-        axios({
-          method: 'POST',
-          url: apiendpoints.product_seller_email_update,
-          data: this.user_data,
-          withCredentials: true
+        send_request({
+          method: 'PATCH',
+          url: `${apiendpoints.product_get}/${this.product_uid}`,
+          data: {"token":  this.product_token, "email": this.user_data.email}
         }).then(
           (res) => {
-            this.dashboard_url = window.location.protocol + "//" + window.location.host + res.data.redirect_url
-            window.location = res.data.redirect_url
+            this.dashboard_url = window.location.protocol + "//" + window.location.host + "/" + static_urls.seller_dashboard.replace(":token", this.product_token)
+            window.location.href = this.dashboard_url
           },
           (err) => {
-            if(!err.response) {
-              this.$bvToast.toast('A Network Error Occurred. Please check your internet connection and try Again.', {
+            
+            let response = err.response
+            if(response.status == 400) {
+              this.api_errors = response.data.error
+            } else {
+              this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
                 ...this.toast_options,
-                title: 'Network Error',
+                title: 'Error',
                 variant: 'danger'
               })
-            } else {
-              let response = err.response
-              if(response.status == 400) {
-                this.api_errors = response.data.error
-                this.$bvToast.toast('Please fix the errors and try again', {
-                  ...this.toast_options,
-                  title: 'Error',
-                  variant: 'danger'
-                })
-              } else {
-                this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
-                  ...this.toast_options,
-                  title: 'Error',
-                  variant: 'danger'
-                })
-              }
             }
+          
             this.submit_disabled = false
           }
         )
       },
+      copy(id) {
+        copy_text(id, this)
+      }
     }
   })
   Vue.use(window.BootstrapVue)

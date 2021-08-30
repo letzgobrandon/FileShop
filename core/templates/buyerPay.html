@@ -1,71 +1,54 @@
-{% extends 'base.html' %}
+{% extends '_base_layout.html' %}
 {% load static %}
-{% block content %}
-<div class='container py-5'>
-    <div class='card col-xl-10 col-md-12 col-12'> 
-        <div class='row py-3 d-flex justify-content-center'>
+
+{% block content_width_cols %}12{% endblock %}
+{% block content_right_class %}px-0 py-0{% endblock %}
+
+{% block content_right %}
+    <b-row v-if="loading" class="py-4">
+        <b-col>
+            <h5 class="text-center">Your transaction is being processed. Please wait..</h5>
+        </b-col>
+    </b-row>
+    <b-row no-gutters v-else>
+        <b-col xs="12" md="4" xl="4">
             <span>
-                <a href="bitcoin:{{address}}?amount={{expected_value}}">
-                    <img height="240px" width="240px"
-                        src="https://www.bitcoinqrcodemaker.com/api/?style=bitcoin&address={{address}}&amount={{expected_value}}&color=1">
+                <a :href="payment_deeplink">
+                    <img height="240px" width="240px" :src="qr_url" />
                 </a>
             </span>
-
-            <div class="col-xl-6 col-md-8 col-12">
-                <div id="bnomics-order-wrapper">
-
-                    <p class="payment_message pt-3 pb-1">To pay, send exactly this {{crypto}} amount</p>
-
-                    <div class="cursor-pointer payment-border rounded text-dark mx-0 my-1 p-2" onclick="specificCopy('{{expected_value}}', 'amount_text')">
-                        <img class="float-right" src="{% static 'svg/copy.png' %}" width=30px height=30px alt="Copy to clipboard">
-                        <p class="h6 text-center" id="amount_text">{{expected_value}} {{crypto}} ≈ {{usd_price}} USD</p>
-                    </div>
-
-                    <p class="payment_message py-1" >to this {{crypto}} address</p>
-
-                    <div class="cursor-pointer payment-border rounded text-dark mx-0 my-1 p-2" onclick="specificCopy('{{address}}', 'address_text')">
-                        <img class="float-right" src="{% static 'svg/copy.png' %}" width=30px height=30px alt="Copy to clipboard">
-                        <p class="h6 text-center" id="address_text">{{address}}</p>
-                    </div>
-                    
-                    <progress class='w-75' value="0" max="600" id="progressBar"></progress>
-                    <p class="timer" id="time"></p>    
+        </b-col>
+        <b-col xs="12" md="8" xl="6">
+            <div id="bnomics-order-wrapper" v-if="!config.expired">
+        
+                <p class="payment_message pt-3 pb-1">To pay, send exactly this [[ this.order.crypto ]] amount</p>
+        
+                <div class="cursor-pointer payment-border rounded text-dark mx-0 my-1 p-2" @click="specificCopy(order.expected_value)">
+                    <img class="float-right" src="{% static 'svg/copy.png' %}" width=30px height=30px alt="Copy to clipboard">
+                    <p class="h6 text-center" id="amount_text">[[ order.expected_value ]] [[ order.crypto ]] ≈ [[ order.usd_price ]] USD</p>
                 </div>
-
-                <div style="display:none" id="bnomics-order-expired-wrapper" >
-                    <h3 class="warning bnomics-status-warning">Payment Expired</h3><br>
-                    <p class="click-to-try-again cursor-pointer"><a onClick="window.location.reload()">Click here to try again</a></p>
+        
+                <p class="payment_message py-1" >to this [[ order.crypto ]] address</p>
+        
+                <div class="cursor-pointer payment-border rounded text-dark mx-0 my-1 p-2" @click.prevent="specificCopy(order.address)">
+                    <img class="float-right" src="{% static 'svg/copy.png' %}" width=30px height=30px alt="Copy to clipboard">
+                    <p class="h6 text-center" id="address_text">[[ order.address ]]</p>
                 </div>
-
+                
+                <progress class='w-75' :value="timer.progress" max="600" id="progressBar"></progress>
+                <p class="timer" id="time" :class="{'text-danger': timer.diff<=0 }">
+                    [[this.timer.minutes]] : [[this.timer.seconds]] min
+                </p>
             </div>
-        </div>
-    </div>
-</div>
-
-{% csrf_token %}
-
+        
+            <div id="bnomics-order-expired-wrapper" v-else>
+                <h3 class="warning bnomics-status-warning">Order Expired</h3><br>
+                <p class="click-to-try-again cursor-pointer"><a onClick="window.location.reload()">Click here to try again</a></p>
+            </div>
+        </b-col>
+    </b-row>
 {% endblock %}
-{% block js %}
 
-<script type="text/javascript" id="data_script">
-    var address = "{{address}}";
-    var url = "{% url 'core:payment_processed_buyer' %}";
-    var payment_id = "{{payment_id}}";
-</script>
-<script type="text/javascript">
-    var accept_payments = true;
-    var last_order = "{{last_order}}"
-</script>
-<script type="text/javascript" src="{% static 'js/timer.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/loaddata.js' %}"></script>
-<script>
-    window.onload = function () {
-        loadData();
-        var tenMinutes = 60 * 10,
-            display = document.querySelector('#time');
-        startTimer(tenMinutes, display);
-    }
-</script>
-<script type="text/javascript" src="{% static 'js/paymentSocket.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/copy.js' %}"></script>
+{% block js %}
+<script type="text/javascript" src="{% static 'js/checkout.js' %}"></script>
 {% endblock %}
