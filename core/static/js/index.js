@@ -15,7 +15,9 @@ var app = new Vue({
     ],
 
     submit_disabled: false,
-    api_errors: {}
+    api_errors: {},
+
+    sidebar_visible: true
   },
   mounted() {
     hide_preloader()
@@ -91,6 +93,10 @@ var app = new Vue({
     },
     formatFileNames(files) {
       return files.length === 1 ? files[0].name : `${files.length} files selected`
+    },
+    removeFile(index) {
+      this.files.splice(index, 1)
+      this.filesChanged(this.files)
     }
   }
 })

@@ -1,5 +1,5 @@
 body{
-    background-color: #f5f5f5;
+    background-color: #fff;
     color: black;
     text-align: center;
 }
@@ -44,4 +44,126 @@ body{
 
 .step--label {
     text-transform: uppercase;
+}
+
+.files-container {
+    height: 180px;
+    border: 2px dashed #242424;
+    border-radius: 10px;
+    transition: border-color 0.5s;
+    overflow: hidden;
+}
+
+.files-container:hover {
+    border-color: #6e3cff;
+}
+
+.files-container > div {
+    height: 100%;
+    background-color: #ddd;
+    position: relative;
+    width: 100%;;
+}
+.files-container .b-form-file {
+    height: 100%;
+}
+.files-container .b-form-file .custom-file-label {
+    height: 100%;
+    z-index: 5;
+    position: absolute;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+}
+.files-container .b-form-file .custom-file-label .form-file-text {
+    font-size: 1.5em;
+    font-weight: 400;
+    color: #000;
+    opacity: 1;
+    transition: opacity 0.5s;
+}
+.files-container .b-form-file.hide-label .custom-file-label .form-file-text {
+    opacity: 0;
+}
+.files-container .b-form-file .custom-file-label::after {
+    height: 100%;
+    content: '';
+    width: 100%;
+    left: 0;
+    top: 0;
+    border: 0;
+    z-index: -1;
+    background: transparent;
+}
+.files-container .file-top-text  {
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    text-align: center;
+    width: 100%;
+    height: calc(100%-40px);
+    left: 0;
+}
+.files-container .file-top-text img {
+    height: 50px;
+    transition: 0.5s all;
+}
+.files-container .file-bottom-text  {
+    position: absolute;
+    top: 100px;
+    text-align: center;
+    width: 100%;
+    left: 0;
+    opacity: 1;
+    transition: opacity 0.5s;
+    z-index: 10;
+    height: calc(100% - 100px);
+    overflow: auto;
+}
+.files-container .file-bottom-text::-webkit-scrollbar {
+    width: 7px;
+}
+
+.files-container .file-bottom-text::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.files-container .file-bottom-text::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+}
+.files-container:not(.files-selected):hover .file-top-text img {
+    height: 95%;
+}
+
+.files-container:not(.files-selected):hover .file-bottom-text,
+.files-container:not(.files-selected):hover .b-form-file .custom-file-label .form-file-text {
+    opacity: 0;
+}
+
+.files-info-container {
+    list-style: none;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+}
+.file-name-container {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+.file-action {
+    margin-left: 10px;
+    font-size: 0.55em;
+    border-radius: 50%;
+    border: 1px solid #DC3545;
+    height: 1.5em;
+    width: 1.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+    text-decoration: none;
 }

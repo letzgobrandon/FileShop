@@ -1,0 +1,80 @@
+/** Bootstrap Overrides **/
+
+.input-group-append {
+    margin-left: -4px;
+}
+
+.form-control, .custom-select {
+    transition: border-color 0.5s;
+    border-color: rgb(29, 29, 29);
+}
+.form-control:focus, .form-control:hover,
+.custom-select:focus, .custom-select:hover {
+    border-color: #6e3cff !important;
+    outline: 0;
+    /* box-shadow: 0 0 0 0.2rem rgba(110, 60, 255, 0.25) !important; */
+    box-shadow: none !important;
+}
+
+/** Common **/
+
+.btn-theme {
+    font-weight: 500;
+    transition: 0.5s all;
+}
+
+.btn-theme:hover {
+    background-color: #6e3cff;
+}
+
+.text-custom-orange {
+    color: #f79a28;
+}
+
+.text-custom-green {
+    color: #33cba1;
+}
+
+/** Sidebar **/
+#sidebar {
+    background: #f1ecff !important;
+}
+
+#sidebar .sidebar-logo {
+    height: 52px;
+}
+
+#sidebar .sidebar-seperator {
+    max-width: 60%;
+    border-top: 1px solid rgba(0,0,0,0.6);
+}
+
+.container.sidebar-visible {
+    padding-left: 240px;
+}
+
+#sidebar .sidebar-list {
+    list-style: none;
+    padding: 0;
+    margin: 0
+}
+
+#sidebar .sidebar-list-item a {
+    color: rgba(0,0,0,0.6);
+    transition: color 0.5s;
+    text-decoration: none;
+    font-size: 20px;
+}
+
+#sidebar .sidebar-list-item a:hover {
+    color: rgba(0,0,0,1);
+}
+
+/** header **/
+#header .logo {
+    height: 60px;
+}
+
+#header .logo-sub {
+    font-weight: 500;
+}
