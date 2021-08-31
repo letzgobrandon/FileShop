@@ -1,0 +1,20 @@
+{% load static %}
+<b-sidebar 
+    id="sidebar" 
+    title="Sidebar" 
+    @shown="updateSidebarState(true)" 
+    @hidden="updateSidebarState(false)" 
+    :visible="sidebar_visible"
+    :no-header="true"
+    width="240px"
+>
+    <div class="px-3 py-2">
+        <b-img src="{% static 'images/fs-logo.png' %}" fluid class="sidebar-logo"></b-img>
+        <hr class="sidebar-seperator" />
+        <ul class="sidebar-list">
+            <li class="sidebar-list-item">
+                <a href="#">About</a>
+            </li>
+        </ul>
+    </div>
+</b-sidebar>

@@ -1,8 +1,9 @@
-<b-row>
+{% load static %}
+<b-row class="mt-4" id="header">
     <b-col cols="12">
-        <h3 class="logo mb-1">FILE SHOP</h3>
+        <img class="logo mb-1" src="{% static 'images/fs-logo-full.png' %}" />
     </b-col>
     <b-col cols="12">
-        <h5 class="logo-sub">Sell Files Anonymously and Receive BTC or BCH!</h5>
+        <h5 class="logo-sub">Sell Files Anonymously for <span class="text-custom-orange">BTC</span> or <span class="text-custom-green">BCH!</span></h5>
     </b-col>
 </b-row>

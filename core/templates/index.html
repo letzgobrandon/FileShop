@@ -1,22 +1,67 @@
 {% extends '_base_layout.html' %}
 {% load static %}
 
+{% block content_width_cols %}10{%endblock %}
+
 {% block content_right %}
     <b-form @submit.prevent="save">
         {% csrf_token %}
 
+        
+        
+        <b-row class="text-left">
+            <!-- Product Files -->
+            <b-col cols="12" md="12">
+                <b-form-group class="files-container" :class="{'files-selected': files.length}">
+                    <div class="file-top-text">
+                        <img src="{% static 'images/upload-icon.png' %}" />
+                    </div>
+                    <b-form-file 
+                        multiple 
+                        @input="filesChanged" 
+                        id="files" 
+                        v-model="files" 
+                        placeholder="Upload Files to be Sold" 
+                        required
+                        :file-name-formatter="formatFileNames"
+                        class="files-input"
+                        :class="{'hide-label': files.length}"
+                    ></b-form-file>
+                    <div class="file-bottom-text">
+                        <div v-if="files.length">
+                            <ul class="files-info-container">
+                                <li v-for="(file, index) in files" :key="index" class="file-name-container">
+                                    <span class="file-name">
+                                        [[ file.name ]]
+                                    </span>
+                                    <span class="file-action text-danger">
+                                        <a href="#" class="text-danger" @click.prevent="removeFile(index)">X</a>
+                                    </span>
+                                </li>
+                            </ul>
+                            <strong>Total Size: </strong> [[ files_stats.size || 0 ]] MB / 5 MB
+                        </div>
+                        <div v-else>
+                            maximum total size: 5 MB
+                        </div>
+                    </div>
+                    <div class="text-danger" v-if="api_errors.files">
+                        <small>[[ api_errors.files.join(",") ]]</small>
+                    </div>
+                </b-form-group>
+            </b-col>
+        </b-row>
+
         <b-row class="text-left">
             <!-- Product Name -->
             <b-col cols="12" md="8">
-                <b-form-group
-                    label="Product Name"
-                    label-for="product-name"
-                >
+                <b-form-group>
                     <b-form-input
                         id="product-name"
                         v-model="product.name"
-                        placeholder="e.g. AWS Creds $10"
+                        placeholder="Product Name"
                         required
+                        size="lg"
                     ></b-form-input>
                     <div class="text-danger" v-if="api_errors.name">
                         <small>[[ api_errors.name.join(",") ]]</small>
@@ -26,15 +71,13 @@
             
             <!-- Product Price -->
             <b-col cols="12" md="4">
-                <b-form-group
-                    label="Price"
-                    label-for="product-price"
-                >
+                <b-form-group>
                     <b-input-group>
-                        <template #prepend>
+                        <template #append>
                             <b-form-select
-                            :options="currency_options"
-                            v-model="product.currency"
+                                :options="currency_options"
+                                v-model="product.currency"
+                                size="lg"
                             ></b-form-select>
                         </template>
                         <b-form-input
@@ -44,6 +87,7 @@
                             required
                             min="0"
                             type="number"
+                            size="lg"
                         ></b-form-input>
                     </b-input-group>
                 </b-form-group>
@@ -58,16 +102,14 @@
         <b-row class="text-left">
             <!-- Product Description -->
             <b-col cols="12" md="12">
-                <b-form-group
-                    label="Description"
-                    label-for="product-description"
-                >
+                <b-form-group>
                     <b-form-textarea
                         id="product-description"
                         v-model="product.description"
                         placeholder="Product Description"
-                        rows="3"
+                        rows="6"
                         max-rows="6"
+                        size="lg"
                     ></b-form-textarea>
                     
                     <div class="text-danger" v-if="api_errors.description">
@@ -76,38 +118,12 @@
                 </b-form-group>
             </b-col>
         </b-row>
-        
-        <b-row class="text-left">
-            <!-- Product Files -->
-            <b-col cols="12" md="12">
-                <b-form-group
-                    label="Select File(s)"
-                    label-for="product-files"
-                >
-                    <b-form-file 
-                        multiple 
-                        @input="filesChanged" 
-                        id="files" 
-                        v-model="files" 
-                        placeholder="Choose Files or Drop it here" 
-                        required
-                        :file-name-formatter="formatFileNames"
-                    ></b-form-file>
-                    <div>
-                        <strong>Total Size: </strong> [[ files_stats.size || 0 ]] MB
-                    </div>
-                    <div class="text-danger" v-if="api_errors.files">
-                        <small>[[ api_errors.files.join(",") ]]</small>
-                    </div>
-                </b-form-group>
-            </b-col>
-        </b-row>
 
         <!-- Submit Button -->
         <b-row class="mb-3">
             <b-col class="text-center">
-                <b-button variant="info" pill type="submit" :disabled="submit_disabled">
-                    Start Selling!
+                <b-button pill type="submit" :disabled="submit_disabled" class="btn-theme">
+                    Put up for Sale
                 </b-button>
             </b-col>
         </b-row>
