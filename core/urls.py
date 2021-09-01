@@ -3,26 +3,10 @@ from . import views, api_views
 
 app_name = "core"
 urlpatterns = [
-    path("", views.ProductCreateView.as_view(), name="product_create_view"),
     re_path(
         r"^dashboard/(?P<token>[0-9a-f-]+)$",
         views.ProductSellerView.as_view(),
         name="product_info_seller",
-    ),
-    re_path(
-        r"^dashboard/email_updates$",
-        views.ProductEmailUpdatesView.as_view(),
-        name="product_seller_email_updates",
-    ),
-    re_path(
-        r"^product/(?P<uid>[0-9a-f-]+)/$",
-        views.ProductPublicView.as_view(),
-        name="product_info_buyer",
-    ),
-    re_path(
-        r"^checkout/(?P<order_uid>[0-9a-f-]+)$",
-        views.IntializeOrder.as_view(),
-        name="product_pay_buyer",
     ),
     re_path(
         r"^order_processed/$",
@@ -71,6 +55,11 @@ urlpatterns = [
         r"^api/order/(?P<uid>[0-9a-f-]+)/callback$",
         api_views.OrderConfirmCallbackAPIView.as_view(),
         name="api_order_callback",
+    ),
+    re_path(
+        r"^api/order/callback/$",
+        api_views.OrderCallbackView.as_view(),
+        name="api_order_blockonomics_callback",
     ),
     # re_path(
     #     r"^api/currency-converter$",

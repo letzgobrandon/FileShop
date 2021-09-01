@@ -104,7 +104,6 @@ class OrderConfirmCallbackView(generic.View):
 
         return HttpResponse("Order status isn't changed")
 
-
 class OrderStatusView(generic.View):
     order_status_view = {
         0: "confirmation.html",

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import get_object_or_404, reverse
 from django.core.validators import validate_email
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -313,3 +314,39 @@ class OrderConfirmCallbackAPIView(AnonymousView):
                 "status": ["Order status wasn't changed.", ]
             }
         }, status=status.HTTP_400_BAD_REQUEST)
+
+class OrderCallbackView(AnonymousView):
+
+    def get(self, *args, **kwargs):
+
+        secret = settings.CALLBACK_SECRET
+
+        secret_from_request = self.request.query_params.get('secret')
+
+        if secret != secret_from_request:
+            raise PermissionDenied("Invalid Request")
+        
+        txid = self.request.query_params.get('txid')
+        value = self.request.query_params.get('value')
+        status = int(self.request.query_params.get('status', -1))
+        addr = self.request.query_params.get('addr')
+
+        try:
+            order = Order.objects.get(address=addr)
+        except Order.DoesNotExist:
+            raise PermissionDenied("Invalid Address")
+
+        print(status)
+        
+        if status >= order.status_of_transaction:
+            order.status_of_transaction = max(
+                order.status_of_transaction, status
+            )
+            order.received_value = value
+            order.txid = txid
+            order.save()
+
+            return Response()
+
+        return PermissionDenied("Status cannot be updated at this stage")
+    
