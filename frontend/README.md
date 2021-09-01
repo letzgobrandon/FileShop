@@ -1,4 +1,7 @@
-# frontend
+# Frontend
+## Configure
+
+Configure your backend URL in `apiendpoints.js` -> `API_BASE`, e.g. `http://localhost:8000/api`
 
 ## Project setup
 ```
