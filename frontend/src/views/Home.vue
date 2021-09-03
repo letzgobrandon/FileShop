@@ -150,7 +150,7 @@ export default {
         }
     },
     mounted() {
-      
+      this.$store.dispatch("updateSiteTitle", "Home")
     },
     methods: {
         filesChanged(files) {

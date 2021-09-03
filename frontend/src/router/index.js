@@ -35,6 +35,11 @@ const routes = [
           }
         }
       },
+      {
+        path: '/order/:order_uid',
+        name: 'order',
+        component: () => import("../views/Order.vue"),
+      },
     ]
   },
 ]

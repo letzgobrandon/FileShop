@@ -9,24 +9,9 @@ urlpatterns = [
         name="product_info_seller",
     ),
     re_path(
-        r"^order_processed/$",
-        views.OrderConfirmCallbackView.as_view(),
-        name="order_processed_buyer",
-    ),
-    re_path(
-        r"^order/(?P<order_uid>[0-9a-f-]+)/$",
-        views.OrderStatusView.as_view(),
-        name="order_info_buyer",
-    ),
-    re_path(
-        r"^(?P<order_id>\w+)/download/$",
+        r"^order/(?P<order_uid>[0-9a-f-]+)/download/$",
         views.DownloadFiles.as_view(),
         name="product_download_buyer",
-    ),
-    path(
-        "update/orders",
-        views.UpdateOrderStatusCallback.as_view(),
-        name="order_status_update",
     ),
 
     ## API URLs Start ##
@@ -50,11 +35,6 @@ urlpatterns = [
         r"^api/order/(?P<uid>[0-9a-f-]+)$",
         api_views.OrderAPIView.as_view(),
         name="api_order",
-    ),
-    re_path(
-        r"^api/order/(?P<uid>[0-9a-f-]+)/callback$",
-        api_views.OrderConfirmCallbackAPIView.as_view(),
-        name="api_order_callback",
     ),
     re_path(
         r"^api/order/callback/$",

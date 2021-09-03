@@ -1,4 +1,5 @@
-const API_BASE = "http://localhost:8000/api"
+const BASE = "http://localhost:8000"
+const API_BASE = `${BASE}/api`
 
 export const apiendpoints = {
     product_create: `${API_BASE}/product`,
@@ -11,11 +12,7 @@ export const apiendpoints = {
 }
 
 export const static_urls = {
-    email_update: 'dashboard/email_updates',
-    product_public_url: 'product/:uid',
-    seller_dashboard: 'dashboard/:token',
-    checkout: 'checkout/:order_uuid',
-    order_confirm_callback: 'order_processed',
+    download_url: `${BASE}/order/:order_uid/download`
 }
 
 export default apiendpoints

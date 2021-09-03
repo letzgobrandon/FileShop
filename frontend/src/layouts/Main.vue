@@ -1,12 +1,8 @@
 <template>
     <div>
+        <Header />
         <b-container :class="{'sidebar-visible': $store.state.sidebar_visible}">
             <Sidebar />
-            <b-row>
-                <b-col>
-                    <Header />
-                </b-col>
-            </b-row>
             <b-row>
                 <b-col :cols="cols.xs" :md="cols.md" class="mx-auto">
                     <b-row class="overflow-hidden mt-4">

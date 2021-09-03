@@ -120,6 +120,7 @@ export default {
                 (res) => {
                     this.product = res
                     this.loading = false
+                    this.$store.dispatch("updateSiteTitle", res.product_name || "Buy Product")
                     // if(this.selected_crypto.crypto)
                     //   this.load_crypto_converstion_rates()
                 },

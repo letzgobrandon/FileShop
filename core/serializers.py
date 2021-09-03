@@ -42,10 +42,23 @@ class ProductSensitiveSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
 
+    product_uid = SerializerMethodField()
+    product = SerializerMethodField()
+
     class Meta:
         model = Order
         fields = [
             "uid", "status_of_transaction", "expected_value", 
             "usd_price", "received_value", "address", "crypto", 
-            "timestamp"
+            "timestamp", "product_uid", "product"
         ]
+
+    def get_product_uid(self, obj):
+        return obj.product.uid
+    
+    def get_product(self, obj: Order):
+        if obj.status_of_transaction != obj.StatusChoices.CONFIRMED:
+            return None
+        
+        return ProductSerializer(instance=obj.product).data
+    

@@ -50,11 +50,15 @@
                         Getting Payment Status from Server.. Do not close or refresh this window.
                     </p>
                     <p v-else-if="payment_verification.order">
-                        Your order status is {{ status_options[payment_verification.order.status_of_transaction] }}. If you've made the payment, stay relaxed we're still trying to confirm your order. If payment failed at your end, you can <a onClick="window.location.reload()">Click here to try again</a>.
+                        Your order status is {{ status_options[payment_verification.order.status_of_transaction] }}. If you've made the payment, stay relaxed we're still trying to confirm your order. If payment failed at your end, you can <router-link :to="{name: 'product', params: {product_uid: order.product_uid}}">Click here to try again</router-link>.
                     </p>
                 </b-col>
                 <b-col xs="12" md="12" xl="12" class="text-center mx-auto" v-else>
                     <h3 class="text-success">Your Order is confirmed!</h3>
+                    <p>We've received your payment. To download the files please click the link below</p>
+                    <router-link :to="{name: 'order', params: {order_uid: order.uid}}">
+                        <b-button>Download Now</b-button>
+                    </router-link>
                 </b-col>
             </template>
         </b-row>
@@ -123,7 +127,8 @@ export default {
 
         if(this.order_uid)
             this.load_data()
-    
+
+        this.$store.dispatch("updateSiteTitle", "Checkout")
     },
     watch: {
         // 'selected_crypto.crypto' (newV, oldV) {
@@ -218,11 +223,6 @@ export default {
                 let response = JSON.parse(event.data)
                 console.log(response)
                 if (parseInt(response.status) >= 0 && $this.config.accept_payments) {
-                    // console.log("Sending Request")
-                    // setTimeout(
-                    //     $this.paymentStatusUpdate(response.status),
-                    //     1000
-                    // )
                     if($this.timer_interval) clearInterval($this.timer_interval)
                     if(!$this.payment_verification.enabled) {
                         $this.payment_verification.enabled = true

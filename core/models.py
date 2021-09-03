@@ -59,7 +59,7 @@ class Product(models.Model):
         self.save(update_fields=['email', ])
     
     @property
-    def files(self):
+    def product_files(self):
         return File.objects.filter(product=self)
 
 class File(models.Model):
@@ -76,7 +76,7 @@ class Order(models.Model):
         NOT_STARTED = -1
         UNCONFIRMED = 0
         PARTIAL_CONFIRMED = 1
-        CONFIMED = 2
+        CONFIRMED = 2
 
     class CryptioChoices(models.TextChoices):
         BTC = "BTC"

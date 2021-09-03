@@ -2,6 +2,7 @@ import zipfile
 import io
 import os
 from django.core.mail import EmailMultiAlternatives
+from django.db.models.query import QuerySet
 from django.template import loader
 from django.contrib.sites.shortcuts import get_current_site
 from django.conf import settings
@@ -10,10 +11,10 @@ from .models import Order
 from datetime import datetime, timedelta
 
 
-def zipFiles(files):
+def zipFiles(files: QuerySet):
     outfile = io.BytesIO()
     with zipfile.ZipFile(outfile, "w") as zf:
-        for n, f in enumerate(files):
+        for f in files.iterator():
             with open(f.file_name, "wb") as file:
                 file.write(f.file_data)
                 file.close()

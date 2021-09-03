@@ -29,11 +29,15 @@ $primary-color: #6e3cff;
 /** Common **/
 
 .btn-theme {
-    font-weight: 500;
-    transition: 0.5s all;
+    font-weight: 500 !important;
+    transition: 0.5s all !important;
+
+    background-color: $primary-color !important;
+    opacity: 0.9;
 
     &:hover {
-        background-color: $primary-color;
+        background-color: $primary-color !important;
+        opacity: 1;
     }
 }
 
@@ -51,13 +55,22 @@ $primary-color: #6e3cff;
     background: #f1ecff !important;
     text-align: center;
     
+    h3 {
+        font-weight: 400;
+    }
+    p {
+        text-align: left;
+        font-weight: 400;
+    }
     .sidebar-logo {
         height: 52px;
     }
 
     .sidebar-seperator {
-        max-width: 60%;
-        border-top: 1px solid rgba(0,0,0,0.6);
+        max-width: 90%;
+        border-top: 2px solid rgba(0,0,0,0.6);
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
 
     .sidebar-list {
@@ -80,6 +93,11 @@ $primary-color: #6e3cff;
     .b-sidebar-body {
         position: relative;
     }
+
+    &.b-sidebar-right > .b-sidebar-header .close {
+        margin-left: auto;
+        margin-right: 0!important;
+    }
 }
 
 #sidebar-handle, #sidebar-open {
@@ -90,7 +108,7 @@ $primary-color: #6e3cff;
     padding-right: 0.5em;
     width: 2em;
     background-color: #f1ecff;
-    display: block;
+    display: none;
     // height: 150px;
     word-wrap: break-word;
     text-align: center;
@@ -99,11 +117,16 @@ $primary-color: #6e3cff;
         color: #7646ff !important;
         text-decoration: none;
     }
+
+    @media all and (min-width: 768px) {
+        display: block;
+    }
 }
 #sidebar-handle {
     position: absolute;
     right: -1.5em;
 }
+
 #sidebar-open {
     position: fixed;
     left: 0;
@@ -114,18 +137,60 @@ $primary-color: #6e3cff;
     transition: padding-left 0.5s;
     padding-left: 0;
     &.sidebar-visible {
-        padding-left: 240px;
+        @media all and (min-width: 768px) {
+            padding-left: 240px;
+        }
     }
 }
 
 /** header **/
 #header {
+    display: none;
+
     .logo {
         height: 60px;
     }
     
     .logo-sub {
         font-weight: 500;
+    }
+
+    @media all and (min-width: 768px) {
+        display: flex;
+    }
+
+    transition: padding-left 0.5s;
+    &.sidebar-visible {
+        padding-left: 240px;
+    }
+} 
+#header-mobile {
+    display: flex;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    background-color: #F1ECFF;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    z-index: 99;
+
+    .logo {
+        height: 30px;
+    }
+    
+    .logo-sub {
+        font-weight: 500;
+        font-size: 0.9em;
+    }
+
+    .menu-button {
+        color: #000000;
+        text-decoration: none;
+    }
+
+    @media all and (min-width: 768px) {
+        display: none;
     }
 } 
 

@@ -291,31 +291,11 @@ class OrderAPIView(AnonymousView, generics.RetrieveAPIView):
         except self.model.DoesNotExist:
             raise NotFound("Order Not Found")
 
-class OrderConfirmCallbackAPIView(AnonymousView):
-
-    def post(self, *args, **kwargs):
-        
-        status_of_transaction = self.request.data.get("status", None)
-        if not status_of_transaction:
-            raise self.MissingParametersError(fields=['status_of_transaction', ])
-
-        order = get_object_or_404(Order, uid=kwargs['uid'])
-
-        if status_of_transaction >= order.status_of_transaction:
-            order.status_of_transaction = max(
-                order.status_of_transaction, status_of_transaction
-            )
-            order.save()
-
-            return Response()
-
-        return Response({
-            "error": {
-                "status": ["Order status wasn't changed.", ]
-            }
-        }, status=status.HTTP_400_BAD_REQUEST)
-
 class OrderCallbackView(AnonymousView):
+
+    email_template = "emails/payment.html"
+    email_subject = "emails/product_page.txt"
+    extra_email_context = {}
 
     def get(self, *args, **kwargs):
 
@@ -327,24 +307,37 @@ class OrderCallbackView(AnonymousView):
             raise PermissionDenied("Invalid Request")
         
         txid = self.request.query_params.get('txid')
-        value = self.request.query_params.get('value')
+        value = self.request.query_params.get('value', 0)
         status = int(self.request.query_params.get('status', -1))
         addr = self.request.query_params.get('addr')
 
         try:
-            order = Order.objects.get(address=addr)
+            order: Order = Order.objects.get(address=addr)
         except Order.DoesNotExist:
             raise PermissionDenied("Invalid Address")
 
-        print(status)
-        
         if status >= order.status_of_transaction:
             order.status_of_transaction = max(
                 order.status_of_transaction, status
             )
-            order.received_value = value
+            order.received_value = float(value)/1e8
             order.txid = txid
             order.save()
+
+            if order.status_of_transaction == order.StatusChoices.CONFIRMED:
+                self.extra_email_context["track_uri"] = self.request.build_absolute_uri(
+                    reverse(
+                        "core:product_info_seller", kwargs={"token": order.product.token}
+                    )
+                )
+                email_helper(
+                    request,
+                    order.product.email,
+                    self.email_subject,
+                    self.email_template,
+                    html_email_template_name=self.email_template,
+                    extra_email_context=self.extra_email_context,
+                )
 
             return Response()
 

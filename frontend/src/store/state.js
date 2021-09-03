@@ -1,7 +1,7 @@
 import {apiendpoints, static_urls } from "../../apiendpoints";
 
 export default {
-    sidebar_visible: true,
+    sidebar_visible: false,
 
     apiendpoints,
     static_urls,
