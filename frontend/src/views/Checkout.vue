@@ -45,20 +45,63 @@
             </template>
             <template v-else>
                 <b-col xs="12" md="12" xl="12" class="text-center mx-auto" v-if="payment_verification.loading || !payment_verification.order || payment_verification.order.status_of_transaction < 2">
+                    <div class="mb-3">
+                        <font-awesome-icon :icon="spinnerIcon" spin size="3x" />
+                    </div> 
                     <h3>We're verifying your payment.. Please wait..</h3>
+                    <b-alert variant="warning" title="Note" show>
+                        Payments may take a while to get Confirmed. You can bookmark/copy this Page URL to come back at later stage to see your Payment Status.
+                        <b-form-group
+                            class="mt-3"
+                            label-for="product-url"
+                        >
+                            <b-input-group>
+                                <template #append>
+                                    <b-button variant="warning" @click="copy('url')">
+                                        Copy to Clipboard
+                                        <img id="copy-content" :src="require('@/assets/images/copy.png')" width=20px height=20px alt="Copy to clipboard">
+                                    </b-button>
+                                </template>
+                                <b-form-input
+                                    id="url"
+                                    :value="public_url"
+                                    placeholder="Public URL"
+                                    readonly
+                                    class="btn-disabled-translucent"
+                                ></b-form-input>
+                            </b-input-group>
+                        </b-form-group>
+                    </b-alert>
                     <p v-if="payment_verification.loading">
                         Getting Payment Status from Server.. Do not close or refresh this window.
                     </p>
-                    <p v-else-if="payment_verification.order">
-                        Your order status is {{ status_options[payment_verification.order.status_of_transaction] }}. If you've made the payment, stay relaxed we're still trying to confirm your order. If payment failed at your end, you can <router-link :to="{name: 'product', params: {product_uid: order.product_uid}}">Click here to try again</router-link>.
-                    </p>
+                    <template v-else-if="payment_verification.order">
+                        <p>
+                            Your order status is {{ status_options[payment_verification.order.status_of_transaction] }}. If you've made the payment, stay relaxed we're still trying to confirm your order. If payment failed at your end, 
+                            you can <router-link :to="{name: 'product', params: {product_uid: order.product_uid}}">Click here to try again</router-link> or 
+                            <a href="#" @click.prevent="reloadPage">refresh the page</a>.
+                        </p>
+                    </template>
                 </b-col>
                 <b-col xs="12" md="12" xl="12" class="text-center mx-auto" v-else>
-                    <h3 class="text-success">Your Order is confirmed!</h3>
-                    <p>We've received your payment. To download the files please click the link below</p>
-                    <router-link :to="{name: 'order', params: {order_uid: order.uid}}">
-                        <b-button>Download Now</b-button>
-                    </router-link>
+                    <template v-if="payment_verification.order.is_payment_complete">
+                        <div class="mb-3 text-success">
+                            <font-awesome-icon :icon="checkCircleIcon" size="3x" />
+                        </div> 
+                        <h3 class="text-success">Your Order is confirmed!</h3>
+                        <p>We've received your payment. To download the files please click the link below</p>
+                        <router-link :to="{name: 'order', params: {order_uid: order.uid}}">
+                            <b-button>Download Now</b-button>
+                        </router-link>
+                    </template>
+                    <template v-else>
+                        <div class="mb-3 text-danger">
+                            <font-awesome-icon :icon="failedIcon" size="3x" />
+                        </div> 
+                        
+                        <h3 class="text-danger">Your Order is Failed!</h3>
+                        <p>We've received your payment but it does not match the amount of the Order.</p>
+                    </template>
                 </b-col>
             </template>
         </b-row>
@@ -66,6 +109,7 @@
 </template>
 
 <script>
+import { faCheckCircle, faSpinner, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 import send_request from '../utils/requests'
 export default {
     data() {
@@ -145,6 +189,14 @@ export default {
             if(!this.order) return ""
       
             return `${this.deeplink_mappings[this.order.crypto]}:${this.order.address}?amount=${this.order.expected_value}`
+        },
+        spinnerIcon: () => faSpinner,
+        checkCircleIcon: () => faCheckCircle,
+        failedIcon: () => faTimesCircle,
+        public_url() {
+            if(!this.order_uid) return null
+
+            return window.location.protocol + "//" + window.location.host + "/checkout/" + this.order_uid
         }
     },
     methods: {
@@ -169,10 +221,13 @@ export default {
             )
         },
         init() {
-            if(this.order.status_of_transaction == 2) {
+            if(this.order.status_of_transaction > -1) {
                 this.payment_verification.enabled = true
                 this.payment_verification.loading = false
                 this.payment_verification.order = this.order
+                if(this.order.status_of_transaction != 2) {
+                    this.verify_payment_status()
+                }
 
             } else {
                 this.startTimer()
@@ -221,7 +276,6 @@ export default {
             let $this = this
             this.socket_config.connection.onmessage = function(event) {
                 let response = JSON.parse(event.data)
-                console.log(response)
                 if (parseInt(response.status) >= 0 && $this.config.accept_payments) {
                     if($this.timer_interval) clearInterval($this.timer_interval)
                     if(!$this.payment_verification.enabled) {
@@ -256,7 +310,7 @@ export default {
                     this.payment_verification.loading = false
                 },
                 () => {
-                    this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
+                    this.$bvToast.toast('An Unknown Error Occurred while getting transaction status.', {
                         ...this.$store.state.common_toast_options,
                         title: 'Error',
                         variant: 'danger'
@@ -266,10 +320,20 @@ export default {
         },
         specificCopy(value) {
             this.$copy_arbitary_text(value, this)
-        }
+        },
+        copy(id) {
+            this.$copy_text(id, this)
+        },
+        reloadPage: () => window.location.reload()
     },
     beforeDestroy() {
         this.payment_verification.enabled = false
     }
 }
 </script>
+
+<style lang="scss">
+    .btn-disabled-translucent {
+        background-color: rgba(0,0,0,0.1);
+    }
+</style>

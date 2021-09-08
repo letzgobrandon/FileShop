@@ -50,7 +50,7 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = [
             "uid", "status_of_transaction", "expected_value", 
             "usd_price", "received_value", "address", "crypto", 
-            "timestamp", "product_uid", "product"
+            "timestamp", "product_uid", "product", "is_payment_complete"
         ]
 
     def get_product_uid(self, obj):
@@ -62,3 +62,10 @@ class OrderSerializer(serializers.ModelSerializer):
         
         return ProductSerializer(instance=obj.product).data
     
+# class OrderEmailSerializer(serializers.ModelSerializer):
+
+#     class Meta:
+#         model = Order
+#         fields = [
+#             "uid", "email"
+#         ]

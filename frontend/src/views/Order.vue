@@ -6,7 +6,7 @@
             </b-col>
         </b-row>
         <b-row no-gutters v-else>
-            <template v-if="order.status_of_transaction == 2">
+            <template v-if="order.status_of_transaction == 2 && order.is_payment_complete">
                 <b-col xs="12" md="12" xl="12">
                     <b-col cols="12" md="12">
                         <img class="card-img-top" :src="require('@/assets/images/product_placeholder.png')" alt="Card Image Cap">
@@ -85,7 +85,6 @@ export default {
         }
     },
     mounted() {
-        console.log(this.$route)
         this.$store.dispatch('updateSidebarState', false)
 
         this.order_uid = this.$route.params.order_uid

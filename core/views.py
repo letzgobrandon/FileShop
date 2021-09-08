@@ -45,7 +45,7 @@ class DownloadFiles(generic.View):
 
         order = self.get_order(**kwargs)
 
-        if order.status_of_transaction == order.StatusChoices.CONFIRMED:
+        if order.status_of_transaction == order.StatusChoices.CONFIRMED and order.is_payment_complete:
             files = order.product.product_files
             zipped_file = zipFiles(files)
             response = HttpResponse(

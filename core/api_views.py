@@ -290,6 +290,16 @@ class OrderAPIView(AnonymousView, generics.RetrieveAPIView):
             return self.get_queryset().get(uid=self.kwargs['uid'])
         except self.model.DoesNotExist:
             raise NotFound("Order Not Found")
+        
+    
+    # def patch(self, *args, **kwargs):
+
+    #     serializer = self.get_serializer(data=self.request.data, partial=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+
+    #     return Response()
+
 
 class OrderCallbackView(AnonymousView):
 
@@ -330,14 +340,15 @@ class OrderCallbackView(AnonymousView):
                         "core:product_info_seller", kwargs={"token": order.product.token}
                     )
                 )
-                email_helper(
-                    request,
-                    order.product.email,
-                    self.email_subject,
-                    self.email_template,
-                    html_email_template_name=self.email_template,
-                    extra_email_context=self.extra_email_context,
-                )
+                if order.product.email:
+                    email_helper(
+                        request,
+                        order.product.email,
+                        self.email_subject,
+                        self.email_template,
+                        html_email_template_name=self.email_template,
+                        extra_email_context=self.extra_email_context,
+                    )
 
             return Response()
 

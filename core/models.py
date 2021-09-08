@@ -102,3 +102,19 @@ class Order(models.Model):
     )
     timestamp = models.DateTimeField(auto_now=True)
     crypto = models.CharField(max_length=255, choices=CryptioChoices.choices, null=True)
+
+    is_payment_complete = models.BooleanField(default=False)
+    # email = models.EmailField(null=True)
+
+    def save(self, *args, **kwargs):
+        self.check_payment_completion()
+        super().save(*args, **kwargs)
+    
+    def check_payment_completion(self):
+        if not self.received_value or not  self.expected_value:
+            self.is_payment_complete = False
+        else:
+            if float(self.expected_value) == float(self.received_value):
+                self.is_payment_complete = True
+            else:
+                self.is_payment_complete = False
