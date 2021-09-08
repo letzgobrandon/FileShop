@@ -10,7 +10,7 @@
                         Loading...
                     </template>
                     <template v-else>
-                        {{ product.name || "No Name" }}
+                        {{ product.product_name || "No Name" }}
                     </template>
                 </h5>
                 <p class="card-text">
@@ -188,6 +188,7 @@ export default {
                         title: 'Error',
                         variant: 'danger'
                     })
+                    this.buying_info.loading = false
                 }
             )
         }
