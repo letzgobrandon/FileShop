@@ -50,13 +50,13 @@
                   <b-form-group>
                       <b-form-input
                           id="product-name"
-                          v-model="product.name"
+                          v-model="product.product_name"
                           placeholder="Product Name"
                           required
                           
                       ></b-form-input>
-                      <div class="text-danger" v-if="api_errors.name">
-                          <small>[[ api_errors.name.join(",") ]]</small>
+                      <div class="text-danger" v-if="api_errors.product_name">
+                          <small>[[ api_errors.product_name.join(",") ]]</small>
                       </div>
                   </b-form-group>
               </b-col>
@@ -97,15 +97,15 @@
                   <b-form-group>
                       <b-form-textarea
                           id="product-description"
-                          v-model="product.description"
+                          v-model="product.product_description"
                           placeholder="Product Description"
                           rows="6"
                           max-rows="6"
                           
                       ></b-form-textarea>
                       
-                      <div class="text-danger" v-if="api_errors.description">
-                          <small>[[ api_errors.description.join(",") ]]</small>
+                      <div class="text-danger" v-if="api_errors.product_description">
+                          <small>[[ api_errors.product_description.join(",") ]]</small>
                       </div>
                   </b-form-group>
               </b-col>
@@ -131,10 +131,10 @@ export default {
     data() {
         return {
             product: {
-            name: null,
-            description: null,
-            price: null,
-            currency: 'USD'
+                product_name: null,
+                product_description: null,
+                price: null,
+                currency: 'USD'
             },
             files: [],
             files_stats: {},
