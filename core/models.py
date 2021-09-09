@@ -4,13 +4,13 @@ from uuid import UUID
 from typing import Optional, Dict
 from .constants import CURRENCY_CHOICES
 from django.utils.crypto import get_random_string
-from hitcount.models import HitCount
+from hitcount.models import HitCount, HitCountMixin
 from django.contrib.contenttypes.fields import GenericRelation
 
 # Create your models here.
 
 
-class Product(models.Model):
+class Product(models.Model, HitCountMixin):
     token: UUID = models.UUIDField(
         default=uuid.uuid4, editable=False, primary_key=False
     )  # token to withdraw
@@ -38,29 +38,47 @@ class Product(models.Model):
 
     @property
     def btc_balance(self) -> float:
-        pay_dict: Optional[Dict] = self.orders.filter(
-            crypto="BTC", status_of_transaction=2
-        ).aggregate(models.Sum("received_value"))
-        if pay_dict["received_value__sum"] is not None:
-            return pay_dict["received_value__sum"]
-        return 00.00
+        return self.get_balance('BTC')
 
     @property
     def bch_balance(self) -> float:
-        pay_dict: Optional[Dict] = self.orders.filter(
-            crypto="BCH", status_of_transaction=2
-        ).aggregate(models.Sum("received_value"))
-        if pay_dict["received_value__sum"] is not None:
-            return pay_dict["received_value__sum"]
-        return 00.00
-
-    def update_email(self, email):
-        self.email = email
-        self.save(update_fields=['email', ])
+        return self.get_balance('BCH')
     
     @property
     def product_files(self):
         return File.objects.filter(product=self)
+    
+    def get_balance(self, crypto) -> float:
+        pay_dict: Optional[Dict] = self.orders.filter(
+            crypto=crypto, status_of_transaction=2
+        ).aggregate(models.Sum("received_value"))
+
+        balance = pay_dict["received_value__sum"]
+        if balance is None:
+            balance = 00.00
+
+        withdrawl_dict: Optional[Dict] = self.withdrawls.filter(
+            crypto=crypto, status=Withdrawl.StatusChoices.COMPLETED
+        ).aggregate(models.Sum("amount"))
+
+        withdrawl_balance = withdrawl_dict["amount__sum"]
+        if withdrawl_balance is None:
+            withdrawl_balance = 00.00
+        
+        return float(balance) - float(withdrawl_balance)
+    
+    def update_email(self, email):
+        self.email = email
+        self.save(update_fields=['email', ])
+    
+    def request_withdrawl(self, crypto: str, address: str):
+        print(self.get_balance(crypto))
+        return Withdrawl.objects.create(
+            product=self,
+            address=address,
+            crypto=str(crypto).upper(),
+            amount=self.get_balance(crypto)
+        )
 
 class File(models.Model):
     product: Product = models.ForeignKey(
@@ -118,3 +136,35 @@ class Order(models.Model):
                 self.is_payment_complete = True
             else:
                 self.is_payment_complete = False
+
+class Withdrawl(models.Model):
+
+    class StatusChoices(models.TextChoices):
+        PENDING = 'p'
+        INITIATED = 'i'
+        COMPLETED = 'c'
+        REJECTED = 'r'
+
+    class CryptoChoices(models.TextChoices):
+        BTC = "BTC"
+        BCH = "BCH"
+
+    created_on = models.DateTimeField(auto_now_add=True)
+    modified_on = models.DateTimeField(auto_now=True)
+
+    uid: UUID = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=False)
+
+    product: Product = models.ForeignKey(
+        Product, related_name="withdrawls", on_delete=models.CASCADE
+    )
+
+    address: str = models.TextField()
+
+    amount: float = models.DecimalField(
+        decimal_places=10, max_digits=100
+    )
+
+    status: str = models.CharField(max_length=1, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    txid: Optional[str] = models.TextField(null=True)
+
+    crypto = models.CharField(max_length=255, choices=CryptoChoices.choices, null=True)

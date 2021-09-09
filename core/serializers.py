@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 
-from .models import Product, File, Order
+from .models import Product, File, Order, Withdrawl
 
 
 class FileSerializer(serializers.ModelSerializer):
@@ -27,6 +27,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductSensitiveSerializer(serializers.ModelSerializer):
 
     num_files = SerializerMethodField()
+    hits = SerializerMethodField()
     files = FileSerializer(many=True)
 
     class Meta:
@@ -34,11 +35,15 @@ class ProductSensitiveSerializer(serializers.ModelSerializer):
         fields = [
             "uid", "token", "email",
             "currency", "price", "product_name", 
-            "product_description", "num_files", "files"
+            "product_description", "num_files", "files",
+            "hits"
         ]
 
     def get_num_files(self, obj: Product):
         return obj.files.count()
+    
+    def get_hits(self, obj: Product):
+        return obj.hit_count.hits
 
 class OrderSerializer(serializers.ModelSerializer):
 
@@ -62,10 +67,13 @@ class OrderSerializer(serializers.ModelSerializer):
         
         return ProductSerializer(instance=obj.product).data
     
-# class OrderEmailSerializer(serializers.ModelSerializer):
+class WithdrawlSerializer(serializers.ModelSerializer):
 
-#     class Meta:
-#         model = Order
-#         fields = [
-#             "uid", "email"
-#         ]
+    class Meta:
+        model = Withdrawl
+        fields = [
+            'uid', 'created_on', 'modified_on',
+            'address', 'txid', 'amount', 'status',
+            'crypto'
+        ]
+    

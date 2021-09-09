@@ -13,10 +13,22 @@ const routes = [
         name: 'home',
         component: () => import("../views/Home.vue")
       },
+      // {
+      //   path: '/dashboard/email_updates',
+      //   name: 'email-updates',
+      //   component: () => import("../views/Email.vue")
+      // },
       {
-        path: '/dashboard/email_updates',
-        name: 'email-updates',
-        component: () => import("../views/Email.vue")
+        path: '/dashboard/:product_uid/:product_token',
+        name: 'seller-dashboard',
+        component: () => import("../views/SellerDashboard.vue"),
+        meta: {
+          layout: {
+            cols: {
+              md: 12
+            }
+          }
+        }
       },
       {
         path: '/product/:product_uid',

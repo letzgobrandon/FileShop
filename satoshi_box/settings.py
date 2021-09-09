@@ -153,3 +153,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CALLBACK_SECRET = os.environ.get('CALLBACK_SECRET')
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 20
+}

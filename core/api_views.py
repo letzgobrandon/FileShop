@@ -4,15 +4,18 @@ from django.core.validators import validate_email
 from django.core.exceptions import PermissionDenied, ValidationError
 from requests.api import request
 
-from rest_framework import generics, status
+from rest_framework import generics, status, filters
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, APIException
 
-from .models import Product, File, Order
+from hitcount.models import HitCount
+from hitcount.views import HitCountMixin
+
+from .models import Product, File, Order, Withdrawl
 from .constants import SUPPORTED_CRYPTOS, SUPPORTED_CURRENCIES
-from .serializers import ProductSerializer, OrderSerializer, ProductSensitiveSerializer
+from .serializers import ProductSerializer, OrderSerializer, ProductSensitiveSerializer, WithdrawlSerializer
 from .utils import email_helper, create_order_helper
 from .blockonomics_utils import exchanged_rate
 
@@ -147,7 +150,7 @@ class ProductCreateAPIView(AnonymousView, generics.CreateAPIView):
 
         return Response(data=data, status=status.HTTP_201_CREATED)
 
-class ProductAPIView(generics.RetrieveAPIView, generics.UpdateAPIView):
+class ProductAPIView(AnonymousView, generics.RetrieveAPIView, generics.UpdateAPIView, HitCountMixin):
 
     model = Product
     queryset = model.objects.all()
@@ -187,27 +190,36 @@ class ProductAPIView(generics.RetrieveAPIView, generics.UpdateAPIView):
         if not self.request.data.get('email'):
             return
 
-        product = self.get_object()
+        # product = self.get_object()
 
-        track_uri = self.request.build_absolute_uri(
-            reverse("core:product_info_seller", kwargs={"token": product.token})
-        )
+        # track_uri = self.request.build_absolute_uri(
+        #     reverse("core:product_info_seller", kwargs={"token": product.token})
+        # )
 
-        extra_email_context = {
-            "track_uri": track_uri,
-            "public_uri": self.request.build_absolute_uri(
-                reverse("core:product_info_buyer", kwargs={"uid": product.uid})
-            )
-        }
+        # extra_email_context = {
+        #     "track_uri": track_uri,
+        #     "public_uri": self.request.build_absolute_uri(
+        #         reverse("core:product_info_buyer", kwargs={"uid": product.uid})
+        #     )
+        # }
 
-        email_helper(
-            self.request,
-            product.email,
-            self.email_subject,
-            self.email_template,
-            html_email_template_name=self.email_template,
-            extra_email_context=extra_email_context,
-        )
+        # email_helper(
+        #     self.request,
+        #     product.email,
+        #     self.email_subject,
+        #     self.email_template,
+        #     html_email_template_name=self.email_template,
+        #     extra_email_context=extra_email_context,
+        # )
+
+    def retrieve(self, request, *args, **kwargs):
+        response = super().retrieve(request, *args, **kwargs)
+        if self.request.query_params.get('token') == None:
+            instance: Product = self.get_object()
+            hit_count = HitCount.objects.get_for_object(instance)
+            self.hit_count(self.request, hit_count)
+
+        return response
     
     def update(self, *args, **kwargs):
 
@@ -224,6 +236,76 @@ class ProductAPIView(generics.RetrieveAPIView, generics.UpdateAPIView):
             self.check_email()
         
         return response
+
+class ProductTokenMixin(object):
+
+    def get_product(self) -> Product:
+        try:
+            return Product.objects.get(token=self.kwargs['token'])
+        except Product.DoesNotExist:
+            raise NotFound("Product not found")
+    
+
+class ProductOrdersListAPIView(AnonymousView, generics.ListAPIView, ProductTokenMixin):
+
+    model = Order
+    serializer_class = OrderSerializer
+
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = ['timestamp', 'txid', 'uid']
+    ordering = ['-timestamp', ]
+    search_fields = ['txid', 'addr', 'uid']
+    
+    def get_queryset(self):
+        product = self.get_product()
+        return self.model.objects.filter(product=product)
+
+class ProductBalancesAPIView(AnonymousView, ProductTokenMixin):
+
+    def get(self, *args, **kwargs):
+
+        product = self.get_product()
+
+        data = {}
+
+        for crypto in SUPPORTED_CRYPTOS:
+            data[crypto.lower()] = product.get_balance(crypto)
+        
+        return Response(data)
+
+class ProductWithdrawAPIView(AnonymousView, ProductTokenMixin):
+
+    def post(self, *args, **kwargs):
+
+        product = self.get_product()
+
+        addr = self.request.data.get('address')
+        crypto = self.request.data.get('crypto')
+
+        if not addr:
+            raise self.MissingParametersError(fields=['address', ])
+        self.check_supported_crypto(crypto)
+        crypto = crypto.upper()
+        
+        withdrawl: Withdrawl = product.request_withdrawl(crypto, addr)
+
+        return Response({
+            "uid": withdrawl.uid
+        })
+
+class ProductWithdrawlsListAPIView(AnonymousView, generics.ListAPIView, ProductTokenMixin):
+
+    model = Withdrawl
+    serializer_class = WithdrawlSerializer
+
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = ['created_on', 'modified_on', 'address', 'txid', 'uid']
+    ordering = ['-created_on', ]
+    search_fields = ['txid', 'address', 'uid']
+    
+    def get_queryset(self):
+        product = self.get_product()
+        return self.model.objects.filter(product=product)
 
 
 # class CurrencyConverterAPIView(AnonymousView):

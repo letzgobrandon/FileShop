@@ -27,6 +27,26 @@ urlpatterns = [
         name="api_product",
     ),
     re_path(
+        r"^api/product/(?P<token>[0-9a-f-]+)/orders$",
+        api_views.ProductOrdersListAPIView.as_view(),
+        name="api_product_orders",
+    ),
+    re_path(
+        r"^api/product/(?P<token>[0-9a-f-]+)/balances$",
+        api_views.ProductBalancesAPIView.as_view(),
+        name="api_product_balances",
+    ),
+    re_path(
+        r"^api/product/(?P<token>[0-9a-f-]+)/withdrawls$",
+        api_views.ProductWithdrawlsListAPIView.as_view(),
+        name="api_product_withdrawls",
+    ),
+    re_path(
+        r"^api/product/(?P<token>[0-9a-f-]+)/withdrawl$",
+        api_views.ProductWithdrawAPIView.as_view(),
+        name="api_product_withdrawl",
+    ),
+    re_path(
         r"^api/order$",
         api_views.InitiateProductBuyAPIView.as_view(),
         name="api_product_order",
