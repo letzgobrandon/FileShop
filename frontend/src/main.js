@@ -63,6 +63,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
+// Register Service Worker
+import './registerServiceWorker'
 
 new Vue({
   router,

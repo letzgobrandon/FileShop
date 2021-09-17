@@ -20,5 +20,7 @@ export default {
 
     options: {
         disable_bch: true
-    }
+    },
+
+    active_service_worker: null,
 }

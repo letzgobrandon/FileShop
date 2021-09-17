@@ -10,5 +10,8 @@ export default {
     },
     updateHeaderSide({commit}, value) {
         commit('UPDATE_HEADER_SIDE', value)
-    }
+    },
+    updateServiceWorker({commit}, registration){
+        commit('SET_SERVICE_WORKER', registration)
+      },
 }

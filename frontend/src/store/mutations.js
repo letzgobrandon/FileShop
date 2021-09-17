@@ -7,5 +7,8 @@ export default {
     },
     UPDATE_HEADER_SIDE(state, value) {
         state.header.side  = value
-    }
+    },
+    SET_SERVICE_WORKER(state, registration) {
+        state.active_service_worker = registration
+    },
 }
