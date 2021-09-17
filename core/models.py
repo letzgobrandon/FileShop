@@ -50,7 +50,7 @@ class Product(models.Model, HitCountMixin):
     
     def get_balance(self, crypto) -> float:
         pay_dict: Optional[Dict] = self.orders.filter(
-            crypto=crypto, status_of_transaction=2
+            crypto=crypto, status_of_transaction__gte=0
         ).aggregate(models.Sum("received_value"))
 
         balance = pay_dict["received_value__sum"]
@@ -132,7 +132,7 @@ class Order(models.Model):
         if not self.received_value or not  self.expected_value:
             self.is_payment_complete = False
         else:
-            if float(self.expected_value) == float(self.received_value):
+            if float(self.expected_value) <= float(self.received_value):
                 self.is_payment_complete = True
             else:
                 self.is_payment_complete = False

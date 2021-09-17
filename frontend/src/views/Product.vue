@@ -92,25 +92,23 @@
             </b-col>
             <b-col cols="12" md="12" class="px-4 py-2">
                 <b-row no-gutters>
-                    <b-col cols="12" md="6" class="text-center mt-2">
+                    <b-col cols="12" :md="$store.state.options.disable_bch ? 12 : 6" class="text-center mt-2">
                         <BitcoinButton 
-                            :amount="this.converted_rates.btc.loading ? 0 : this.converted_rates.btc.value.price"
+                            :disable_amount="true"
                             label="Pay with BTC"
                             variant="btc"
                             class="mx-2"
                             @input="initiate_transaction('BTC')"
-                            :loading="this.converted_rates.btc.loading"
                             :disabled="buying_info.loading"
                         />
                     </b-col>
-                    <b-col cols="12" md="6" class="text-center mt-2">
+                    <b-col cols="12" md="6" class="text-center mt-2" v-if="!$store.state.options.disable_bch">
                         <BitcoinButton 
-                            :amount="0"
+                            :disable_amount="true"
                             label="Pay with BCH"
                             variant="bch"
                             class="mx-2"
                             @input="initiate_transaction('BCH')"
-                            :loading="this.converted_rates.bch.loading"
                             :disabled="true"
                         />
                     </b-col>
@@ -155,16 +153,16 @@ export default {
             buying_info: {
                 loading: false
             },
-            converted_rates: {
-                bch: { 
-                    loading: false,
-                    value: 0
-                },
-                btc: { 
-                    loading: true,
-                    value: 0
-                },
-            },
+            // converted_rates: {
+            //     bch: { 
+            //         loading: false,
+            //         value: 0
+            //     },
+            //     btc: { 
+            //         loading: true,
+            //         value: 0
+            //     },
+            // },
             overview_fields: [
                 { key: 'file_icon', label: '', class: 'text-center'},
                 { key: 'file_name', label: 'File Name'},
@@ -199,7 +197,7 @@ export default {
                     this.$store.dispatch('updateHeaderTitle', this.product.product_name)
                     this.$store.dispatch('updateHeaderSide', null)
                     
-                    this.load_crypto_converstion_rates()
+                    // this.load_crypto_converstion_rates()
                 },
                 () => {
                     this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
@@ -210,44 +208,44 @@ export default {
                 }
             )
         },
-        load_crypto_converstion_rates() {
-            ['btc', 'bch'].forEach(crypto => {
-                if(crypto == 'bch') return
-                this.converted_rates[crypto].loading = true
+        // load_crypto_converstion_rates() {
+        //     ['btc', 'bch'].forEach(crypto => {
+        //         if(crypto == 'bch') return
+        //         this.converted_rates[crypto].loading = true
       
-                let payload = {
-                    currency: this.product.currency,
-                    price: this.product.price,
-                    crypto: crypto.toUpperCase()
-                }
+        //         let payload = {
+        //             currency: this.product.currency,
+        //             price: this.product.price,
+        //             crypto: crypto.toUpperCase()
+        //         }
 
-                send_request({
-                    method: 'POST',
-                    url: this.$store.state.apiendpoints.currency_converter,
-                    data: payload
-                }).then(
-                    (res) => {
-                        this.converted_rates[crypto].value = res
-                        this.converted_rates[crypto].loading = false
-                    },
-                    (err) => {
-                        if(err.response && err.response.status == 400 && err.response.data.error && err.response.data.error.currency) {
-                            this.$bvToast.toast(err.response.data.error.currency, {
-                                ...this.$store.state.common_toast_options,
-                                title: 'Error',
-                                variant: 'danger'
-                            })
-                        } else {
-                            this.$bvToast.toast(`An Unknown Error Occurred while loading conversion rates for ${crypto} !`, {
-                                ...this.$store.state.common_toast_options,
-                                title: 'Error',
-                                variant: 'danger'
-                            })
-                        }
-                    }
-                )
-            })
-        },
+        //         send_request({
+        //             method: 'POST',
+        //             url: this.$store.state.apiendpoints.currency_converter,
+        //             data: payload
+        //         }).then(
+        //             (res) => {
+        //                 this.converted_rates[crypto].value = res
+        //                 this.converted_rates[crypto].loading = false
+        //             },
+        //             (err) => {
+        //                 if(err.response && err.response.status == 400 && err.response.data.error && err.response.data.error.currency) {
+        //                     this.$bvToast.toast(err.response.data.error.currency, {
+        //                         ...this.$store.state.common_toast_options,
+        //                         title: 'Error',
+        //                         variant: 'danger'
+        //                     })
+        //                 } else {
+        //                     this.$bvToast.toast(`An Unknown Error Occurred while loading conversion rates for ${crypto} !`, {
+        //                         ...this.$store.state.common_toast_options,
+        //                         title: 'Error',
+        //                         variant: 'danger'
+        //                     })
+        //                 }
+        //             }
+        //         )
+        //     })
+        // },
         initiate_transaction(crypto) {
 
             if(!crypto) return

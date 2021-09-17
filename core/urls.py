@@ -61,9 +61,9 @@ urlpatterns = [
         api_views.OrderCallbackView.as_view(),
         name="api_order_blockonomics_callback",
     ),
-    re_path(
-        r"^api/currency-converter$",
-        api_views.CurrencyConverterAPIView.as_view(),
-        name="api_currency_converter",
-    ),
+    # re_path(
+    #     r"^api/currency-converter$",
+    #     api_views.CurrencyConverterAPIView.as_view(),
+    #     name="api_currency_converter",
+    # ),
 ]

@@ -20,14 +20,14 @@
 
             <!-- ID -->
             <template #cell(uid)="data">
-                <small>
-                    {{ data.item.uid }}
-                </small>
+                <div v-b-popover.hover="{variant: 'primary', content: data.item.uid || 'No Data Available'}">
+                    {{ (data.item.uid ? data.item.uid.substring(0, 8) + "..." : null) || "N/A" }}
+                </div>
             </template>
 
             <!-- Timestamp -->
             <template #cell(created_on)="data">
-                <div v-b-popover.hover="'Last Updated On ' + formatDate(data.item.modified_on)">
+                <div v-b-popover.hover="{variant: 'primary', content: 'Last Updated On ' + formatDate(data.item.modified_on)}">
                     {{ formatDate(data.item.created_on) }}
                 </div>
             </template>
@@ -46,7 +46,7 @@
 
             <!-- Amount -->
             <template #cell(amount)="data">
-                <div v-b-popover.hover="'Address ' + data.item.address">
+                <div v-b-popover.hover="{variant: 'info', html: true, content: '<strong>Address:</strong> ' + data.item.address}">
                     {{ data.item.amount }} {{ data.item.crypto }}
                 </div>
             </template>

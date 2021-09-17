@@ -2,18 +2,18 @@
     <a 
         class="bitcoin-button" 
         href="#" 
-        :class="{'btc': variant == 'btc', 'bch': variant == 'bch', 'no-right': hide_right, 'disabled': disabled}" 
-        @click="() => hide_right || disabled ?false:$emit('input')"
+        :class="{'btc': variant == 'btc', 'bch': variant == 'bch', 'no-right': hide_right, 'disabled': disabled, 'left-disabled': disable_amount}" 
+        @click.prevent="() => hide_right || disabled ?false:$emit('input')"
     >
         <div class="bitcoin-button--icon">
             <font-awesome-icon :icon="bitcoinIcon" size="2x" />
         </div>
-        <div class="bitcoin-button--left">
+        <div class="bitcoin-button--left" v-if="!disable_amount">
             <template v-if="loading">
                 <font-awesome-icon :icon="spinnerIcon" size="1x" spin />
             </template>
             <template v-else>
-                {{ amount }}
+                &thickapprox; {{ amount }}
             </template>
         </div>
         <div class="bitcoin-button--right" v-if="!hide_right">
@@ -53,6 +53,11 @@ export default {
             default: false
         },
         disabled: {
+            required: false,
+            type: Boolean,
+            default: false
+        },
+        disable_amount: {
             required: false,
             type: Boolean,
             default: false
@@ -104,7 +109,7 @@ export default {
             transition: 0.3s all;
         }
         &--left {
-            padding-left: 25px;
+            padding-left: 30px;
             min-width: 100px;
             text-align: right;
             justify-content: flex-end;
@@ -119,6 +124,10 @@ export default {
             margin-left: 2px;
             border-top-right-radius: 20px;
             border-bottom-right-radius: 20px;
+        }
+
+        &.left-disabled &--right {
+            padding-left: 30px;
         }
 
         &:hover, &:focus {

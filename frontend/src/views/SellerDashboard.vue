@@ -59,6 +59,7 @@
                                     :loading="this.balances.loading"
                                 />
                                 <BitcoinButton 
+                                    v-if="!$store.state.options.disable_bch"
                                     :amount="balances.data.bch"
                                     label="withdraw"
                                     variant="bch"
@@ -79,7 +80,7 @@
                             </div>
                         </b-col>
                         <b-col cols="12">
-                            <EmailUpdate :product="product" />
+                            <EmailUpdate :product="product" @success="val => product.email = val" />
                         </b-col>
                         <b-col cols="12">
                             <p>Your email will be used to receive updates on payments and send your dashboard URL on demand.</p>

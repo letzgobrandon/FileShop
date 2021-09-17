@@ -278,7 +278,8 @@ export default {
             this.loading = false
         },
         order_complete() {
-            setTimeout(() => this.$router.push({name: 'order', params: {order_uid: this.order.uid}}), 2000)
+            if(this.payment_verification.order.is_payment_complete)
+                setTimeout(() => this.$router.push({name: 'order', params: {order_uid: this.order.uid}}), 2000)
         },
         startTimer() {
             if(this.timer_interval) clearInterval(this.timer_interval)

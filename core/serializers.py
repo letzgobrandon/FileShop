@@ -66,6 +66,18 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def get_product_uid(self, obj):
         return obj.product.uid
+
+class OrderSensitiveSerializer(serializers.ModelSerializer):
+
+    product_uid = SerializerMethodField()
+    product = ProductSerializer(read_only=True)
+
+    class Meta:
+        model = Order
+        fields = "__all__"
+
+    def get_product_uid(self, obj):
+        return obj.product.uid
     
 class WithdrawlSerializer(serializers.ModelSerializer):
 

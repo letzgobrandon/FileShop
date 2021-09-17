@@ -30,7 +30,9 @@
 
             <!-- Txid -->
             <template #cell(txid)="data">
-                {{ data.item.txid || "N/A" }}
+                <div v-b-popover.hover="{variant: 'primary', content: data.item.txid || 'No Data Available'}">
+                    {{ (data.item.txid ? data.item.txid.substring(0, 8) + "..." : null) || "N/A" }}
+                </div>
             </template>
 
             <!-- Status -->

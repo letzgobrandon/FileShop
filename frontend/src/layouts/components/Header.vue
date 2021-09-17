@@ -1,13 +1,14 @@
 <template>
     <div :style="{paddingTop: headerPaddingAdjustment}" v-if="layout == 'main'" class="header layout--main">
-        <b-row class="mt-4 text-center header-main" :class="{'sidebar-visible': $store.state.sidebar_visible}">
+        <b-row class="mt-4 text-center header-main w-100" :class="{'sidebar-visible': $store.state.sidebar_visible}">
             <b-col cols="12">
                 <router-link :to="{name: 'home'}">
                     <img class="logo mb-1" :src="require('@/assets/images/fs-logo-full.png')" />
                 </router-link>
             </b-col>
             <b-col cols="12">
-                <h5 class="logo-sub">Sell Files Anonymously for <span class="text-custom-orange">BTC</span> or <span class="text-custom-green">BCH!</span></h5>
+                <h5 class="logo-sub">Sell Files Anonymously for <span class="text-custom-orange">BTC</span>
+                <template v-if="!$store.state.options.disable_bch"> or <span class="text-custom-green">BCH!</span></template></h5>
             </b-col>
         </b-row>
         <b-row class="text-center m-0 header-mobile">
@@ -17,7 +18,8 @@
                 </router-link>
             </b-col>
             <b-col cols="7">
-                <h5 class="logo-sub">Sell Files Anonymously for <span class="text-custom-orange">BTC</span> or <span class="text-custom-green">BCH!</span></h5>
+                <h5 class="logo-sub">Sell Files Anonymously for <span class="text-custom-orange">BTC</span>
+                <template v-if="!$store.state.options.disable_bch"> or <span class="text-custom-green">BCH!</span></template></h5>
             </b-col>
             <b-col cols="2">
                 <a href="#" @click.prevent="$store.dispatch('updateSidebarState', true)" class="menu-button">

@@ -72,6 +72,7 @@ export default {
                             variant: 'success'
                         })
                         this.submit_disabled = false
+                        this.$emit('success', this.user_data.email)
                     },
                 (err) => {
                     

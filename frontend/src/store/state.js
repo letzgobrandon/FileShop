@@ -16,5 +16,9 @@ export default {
     header: {
         title: null,
         side: null
+    },
+
+    options: {
+        disable_bch: true
     }
 }
