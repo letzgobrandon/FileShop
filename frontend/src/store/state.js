@@ -11,5 +11,10 @@ export default {
         appendToast: false,
         variant: 'success',
         toaster: 'b-toaster-bottom-center'
+    },
+
+    header: {
+        title: null,
+        side: null
     }
 }

@@ -1,18 +1,10 @@
 <template>
     <div>
         <b-row no-gutters>
-            <b-col cols="12" md="12">
-                <img class="card-img-top" :src="require('@/assets/images/product_placeholder.png')" alt="Card Image Cap">
-            </b-col>
             <b-col cols="12" md="12" class="px-4 py-2">
-                <h5 class="card-title">
-                    <template v-if="loading">
-                        Loading...
-                    </template>
-                    <template v-else>
-                        {{ product.product_name || "No Name" }}
-                    </template>
-                </h5>
+                <h3 class="card-title text-underline">
+                    Description
+                </h3>
                 <p class="card-text">
                     <template v-if="loading">
                         Loading...
@@ -21,50 +13,108 @@
                         {{ product.product_description || "No Description" }}
                     </template>
                 </p>
-                <p>
-                    <strong>Total files: </strong> 
-                    <template v-if="loading">
-                        Loading...
-                    </template>
-                    <template v-else>
-                        {{ product.num_files || 0 }}
-                    </template>
-                </p>
-                <p class="text-left">
-                    <strong>Price: </strong>
-                    <template v-if="loading">
-                        Loading...
-                    </template>
-                    <template v-else>
-                        <strong>{{ product.price }}</strong> {{ product.currency }}
-                    </template>
-                </p>
             </b-col>
-            <b-col cols="12" md="12" class="px-4 py-2 text-left d-flex">
-                <strong class="mr-2">Buy Using: </strong>
-                <template v-if="loading">
-                    Loading...
-                </template>
-                <template v-else>
-                    <b-form-select
-                        :options="crypto_options"
-                        v-model="selected_crypto.crypto"
-                        style="max-width: 150px;"
-                    ></b-form-select>
+            <b-col cols="12" md="12" class="px-4 py-2">
+                <h5 class="card-title text-underline">
+                    Overview
+                </h5>
+                <div class="overview-table" v-if="!loading">
+                    <b-table-simple
+                        class="mt-3 text-center" 
+                        responsive
+                    >
+                        <template #table-busy>
+                            <div class="text-center text-primary my-2">
+                                <b-spinner class="align-middle"></b-spinner>
+                                <strong class="d-block">Loading</strong>
+                            </div>
+                        </template>
 
-                    <div class="ml-auto">
-                        <template v-if="!buying_info.loading">
-                            <b-button variant="info" pill :disabled="submit_disabled || !selected_crypto.crypto || selected_crypto.loading" class="d-block w-100" @click.prevent="initiate_transaction">
-                                Buy Now
-                            </b-button>
-                        </template>
-                        <template v-else>
-                            <b-button variant="info" pill :disabled="true" class="d-block w-100">
-                                ...
-                            </b-button>
-                        </template>
-                    </div>
-                </template>
+                        <b-tbody>
+                            <b-tr v-for="(data, index) in product.files" :key="index">
+                                <!-- Icon -->
+                                <b-td>
+                                    <FileIcon :name="data.file_name" />
+                                </b-td>
+
+                                <!-- File Name -->
+                                <b-td class="text-left text-capitalize">
+                                    {{ data.file_name }}
+                                </b-td>
+
+                                <!-- Size -->
+                                <b-td>
+                                    <BytesToHuman :bytes="data.file_size" />
+                                </b-td>
+                            </b-tr>
+                        </b-tbody>
+                    </b-table-simple>
+                </div>
+            </b-col>
+            
+            <b-col cols="12" md="12" class="px-4 py-2">
+                <b-row no-gutters>
+                    <b-col cols="12" md="4" class="text-center">
+                        <h5 class="card-title text-underline">
+                            Total Files
+                        </h5>
+                        <h5>
+                            <template v-if="loading">
+                                Loading...
+                            </template>
+                            <template v-else>
+                                {{ product.num_files || 0 }}
+                            </template>
+                        </h5>
+                    </b-col>
+                    <b-col cols="12" md="4" class="text-center">
+                        <h5 class="card-title text-underline">
+                            Total Size
+                        </h5>
+                        <h5>
+                            <BytesToHuman :bytes="product.files.reduce((p, c) => p + c.file_size, 0)" />
+                        </h5>
+                    </b-col>
+                    <b-col cols="12" md="4" class="text-center">
+                        <h5 class="card-title text-underline">
+                            Total Price
+                        </h5>
+                        <h5>
+                            <template v-if="loading">
+                                Loading...
+                            </template>
+                            <template v-else>
+                                <strong>{{ product.price }}</strong> {{ product.currency }}
+                            </template>
+                        </h5>
+                    </b-col>
+                </b-row>
+            </b-col>
+            <b-col cols="12" md="12" class="px-4 py-2">
+                <b-row no-gutters>
+                    <b-col cols="12" md="6" class="text-center mt-2">
+                        <BitcoinButton 
+                            :amount="this.converted_rates.btc.loading ? 0 : this.converted_rates.btc.value.price"
+                            label="Pay with BTC"
+                            variant="btc"
+                            class="mx-2"
+                            @input="initiate_transaction('BTC')"
+                            :loading="this.converted_rates.btc.loading"
+                            :disabled="buying_info.loading"
+                        />
+                    </b-col>
+                    <b-col cols="12" md="6" class="text-center mt-2">
+                        <BitcoinButton 
+                            :amount="0"
+                            label="Pay with BCH"
+                            variant="bch"
+                            class="mx-2"
+                            @input="initiate_transaction('BCH')"
+                            :loading="this.converted_rates.bch.loading"
+                            :disabled="true"
+                        />
+                    </b-col>
+                </b-row>
             </b-col>
         </b-row>
     </div>
@@ -72,7 +122,17 @@
 
 <script>
 import send_request from '../utils/requests'
+
+import BytesToHuman from "@/components/BytesToHuman"
+import FileIcon from "@/components/FileIcon"
+import BitcoinButton from "@/components/BitcoinButton"
+
 export default {
+    components: {
+        BytesToHuman,
+        FileIcon,
+        BitcoinButton
+    },
     data() {
         return {
             product_uid: null,
@@ -94,7 +154,22 @@ export default {
     
             buying_info: {
                 loading: false
-            }
+            },
+            converted_rates: {
+                bch: { 
+                    loading: false,
+                    value: 0
+                },
+                btc: { 
+                    loading: true,
+                    value: 0
+                },
+            },
+            overview_fields: [
+                { key: 'file_icon', label: '', class: 'text-center'},
+                { key: 'file_name', label: 'File Name'},
+                { key: 'file_size', label: 'File Size', class: 'text-center'},
+            ]
         }
     },
     mounted() {
@@ -121,8 +196,10 @@ export default {
                     this.product = res
                     this.loading = false
                     this.$store.dispatch("updateSiteTitle", res.product_name || "Buy Product")
-                    // if(this.selected_crypto.crypto)
-                    //   this.load_crypto_converstion_rates()
+                    this.$store.dispatch('updateHeaderTitle', this.product.product_name)
+                    this.$store.dispatch('updateHeaderSide', null)
+                    
+                    this.load_crypto_converstion_rates()
                 },
                 () => {
                     this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
@@ -133,42 +210,52 @@ export default {
                 }
             )
         },
-        // load_crypto_converstion_rates() {
-        //   if(!this.selected_crypto.crypto) return
-            
-        //   this.selected_crypto.loading = true
+        load_crypto_converstion_rates() {
+            ['btc', 'bch'].forEach(crypto => {
+                if(crypto == 'bch') return
+                this.converted_rates[crypto].loading = true
+      
+                let payload = {
+                    currency: this.product.currency,
+                    price: this.product.price,
+                    crypto: crypto.toUpperCase()
+                }
 
-        //   let payload = {
-        //     currency: this.product.currency,
-        //     price: this.product.price,
-        //     crypto: this.selected_crypto.crypto
-        //   }
-        //   send_request({
-        //     method: 'POST',
-        //     url: apiendpoints.currency_converter,
-        //     data: payload
-        //   }).then(
-        //     (res) => {
-        //       this.selected_crypto.details = res
-        //       this.selected_crypto.loading = false
-        //     },
-        //     (err) => {
-        //       this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
-        //         ...common_toast_options,
-        //         title: 'Error',
-        //         variant: 'danger'
-        //       })
-        //     }
-        //   )
-        // },
-        initiate_transaction() {
+                send_request({
+                    method: 'POST',
+                    url: this.$store.state.apiendpoints.currency_converter,
+                    data: payload
+                }).then(
+                    (res) => {
+                        this.converted_rates[crypto].value = res
+                        this.converted_rates[crypto].loading = false
+                    },
+                    (err) => {
+                        if(err.response && err.response.status == 400 && err.response.data.error && err.response.data.error.currency) {
+                            this.$bvToast.toast(err.response.data.error.currency, {
+                                ...this.$store.state.common_toast_options,
+                                title: 'Error',
+                                variant: 'danger'
+                            })
+                        } else {
+                            this.$bvToast.toast(`An Unknown Error Occurred while loading conversion rates for ${crypto} !`, {
+                                ...this.$store.state.common_toast_options,
+                                title: 'Error',
+                                variant: 'danger'
+                            })
+                        }
+                    }
+                )
+            })
+        },
+        initiate_transaction(crypto) {
 
-            if(!this.selected_crypto.crypto) return
+            if(!crypto) return
             
             this.buying_info.loading = true
 
             let payload = {
-                crypto: this.selected_crypto.crypto,
+                crypto: crypto,
                 product_uid: this.product_uid
             }
 
@@ -195,3 +282,17 @@ export default {
     }
 }
 </script>
+
+<style lang="scss">
+
+@import '@/scss/colors.scss';
+
+.overview-table {
+    border: 1px solid $primary-color;
+    border-radius: 20px;
+
+    .table th, .table td {
+        border-top: none;
+    }
+}
+</style>

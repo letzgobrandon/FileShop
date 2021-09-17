@@ -205,8 +205,7 @@ export default {
             }).then(
                 (res) => {
                     this.submit_disabled = false
-                    // window.location = this.$store.state.static_urls.email_update + `?uid=${res.uuid}&token=${res.token}`
-                    this.$router.push({name: 'email-updates', query: {uid: res.uuid, token: res.token}})
+                    this.$router.push({name: 'seller-dashboard', params: {product_uid: res.uuid, product_token: res.token}})
                 },
                 (err) => {
                     this.submit_disabled = false

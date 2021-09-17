@@ -1,15 +1,4 @@
-$primary-color: #6e3cff;
-$danger-color: #D20000;
-
-:root {
-    --primary: #6e3cff;
-    --danger: #D20000;
-}
-
-$theme-colors: (
-  "primary": #6e3cff,
-  "danger": #D20000
-);
+@import 'colors';
 
 /** Bootstrap Overrides **/
 
@@ -37,6 +26,12 @@ $theme-colors: (
     }
 }
 
+.alert-danger {
+    background-color: #FEE2E2 !important;
+    border-color: #FEE2E2 !important;
+    color: $danger-color !important;
+}
+
 /** Common **/
 
 .btn-theme {
@@ -50,6 +45,10 @@ $theme-colors: (
         background-color: $primary-color !important;
         opacity: 1;
     }
+}
+
+.text-underline {
+    text-decoration: underline;
 }
 
 
@@ -112,7 +111,7 @@ $theme-colors: (
 }
 
 #sidebar-handle, #sidebar-open {
-    top: 2em;
+    top: 10%;
     padding-top: 0.5em;
     padding-bottom: 0.5em;
     padding-left: 0.5em;
@@ -155,55 +154,80 @@ $theme-colors: (
 }
 
 /** header **/
-#header {
-    display: none;
-
-    .logo {
-        height: 60px;
-    }
-    
-    .logo-sub {
-        font-weight: 500;
-    }
-
-    @media all and (min-width: 768px) {
-        display: flex;
-    }
-
-    transition: padding-left 0.5s;
-    &.sidebar-visible {
-        padding-left: 240px;
-    }
-} 
-#header-mobile {
-    display: flex;
-    padding-top: 20px;
-    padding-bottom: 10px;
-    background-color: #F1ECFF;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    z-index: 99;
-
-    .logo {
-        height: 30px;
-    }
-    
-    .logo-sub {
-        font-weight: 500;
-        font-size: 0.9em;
-    }
-
-    .menu-button {
-        color: #000000;
-        text-decoration: none;
-    }
-
-    @media all and (min-width: 768px) {
+.header {
+    .header-main {
         display: none;
+    
+        .logo {
+            height: 60px;
+        }
+        
+        .logo-sub {
+            font-weight: 500;
+        }
+    
+        @media all and (min-width: 768px) {
+            display: flex;
+        }
+    
+        transition: padding-left 0.5s;
+        &.sidebar-visible {
+            padding-left: 240px;
+        }
+    } 
+
+    .header-mobile {
+        display: flex;
+        padding-top: 20px;
+        padding-bottom: 10px;
+        background-color: #F1ECFF;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        z-index: 99;
+    
+        .logo {
+            height: 30px;
+        }
+        
+        .logo-sub {
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+    
+        .menu-button {
+            color: #000000;
+            text-decoration: none;
+        }
+    
+        @media all and (min-width: 768px) {
+            display: none;
+        }
+    } 
+
+    &.layout {
+        &--sub {
+            background-color: #f1ecff;
+            padding-top: 10px;
+            padding-bottom: 10px;
+
+            .header-main {
+
+                .logo-sub {
+                    color: $primary-color;
+                    font-weight: 700;
+                    font-size: 1.4em;
+                }
+                .logo-side {
+                    color: $primary-color;
+                    font-weight: 700;
+                    justify-self: flex-end;
+                }
+            }
+        }
     }
-} 
+}
 
 body {
     background-color: #fff;

@@ -5,46 +5,75 @@
                 <h5 class="text-center">Your transaction is being processed. Please wait..</h5>
             </b-col>
         </b-row>
-        <b-row no-gutters v-else class="text-center">
+        <b-row no-gutters v-else class="text-center checkout-container" :class="{'no-border': payment_verification.order && payment_verification.order.is_payment_complete }">
             <template v-if="!payment_verification.enabled">
-                <b-col xs="12" md="4" xl="4">
-                    <span>
+                <b-col xs="12" md="12" xl="12" id="bnomics-order-wrapper" v-if="!config.expired">
+                    <b-alert variant="danger" show>
+                        <b-row no-gutters align-v="center">
+                            <b-col cols="2">
+                                <font-awesome-icon :icon="hexagonDangerIcon" size="2x" />
+                            </b-col>
+                            <b-col cols="10">
+                                Do not close this tab. You will be able to download the files when the payment is confirmed.
+                            </b-col>
+                        </b-row>
+                    </b-alert>
+                    <p class="pt-3 pb-1 font-weight-bold">Send exactly this amount:</p>
+
+                    <CustomReadInput
+                        id="amount-text"
+                        :copy="true"
+                        :external="false"
+                        placeholder="Amount"
+                        :value="order.expected_value"
+                        :display_value="order.expected_value +' ' + order.crypto + ' ≈ ' + order.usd_price + ' USD'"
+                        :icon_only="true"
+                        variant="light"
+                        :text_center="true"
+                    />
+
+                    <div class="divider mx-auto"></div>
+            
+                    <p class="py-1 font-weight-bold" >to this {{ order.crypto }} address</p>
+
+                    <CustomReadInput
+                        id="address"
+                        :copy="true"
+                        :external="false"
+                        placeholder="Address"
+                        :value="order.address"
+                        :icon_only="true"
+                        variant="light"
+                        :text_center="true"
+                    />
+                
+                    <div class="mt-3">
                         <a :href="payment_deeplink">
                             <b-img fluid :src="qr_url" />
                         </a>
-                    </span>
-                </b-col>
-                <b-col xs="12" md="8" xl="6">
-                    <div id="bnomics-order-wrapper" v-if="!config.expired">
-                
-                        <p class="payment_message pt-3 pb-1">To pay, send exactly this {{ this.order.crypto }} amount</p>
-                
-                        <div class="cursor-pointer payment-border rounded text-dark mx-0 my-1 p-2" @click="specificCopy(order.expected_value)">
-                            <img class="float-right" :src="require('@/assets/images/copy.png')" width=30px height=30px alt="Copy to clipboard">
-                            <p class="h6 text-center" id="amount_text">{{ order.expected_value }} {{ order.crypto }} ≈ {{ order.usd_price }} USD</p>
-                        </div>
-                
-                        <p class="payment_message py-1" >to this {{ order.crypto }} address</p>
-                
-                        <div class="cursor-pointer payment-border rounded text-dark mx-0 my-1 p-2" @click.prevent="specificCopy(order.address)">
-                            <img class="float-right" :src="require('@/assets/images/copy.png')" width=30px height=30px alt="Copy to clipboard">
-                            <p class="h6 text-center" id="address_text">{{ order.address }}</p>
-                        </div>
-                        
-                        <progress class='w-75' :value="timer.progress" max="600" id="progressBar"></progress>
-                        <p class="timer" id="time" :class="{'text-danger': timer.diff<=0 }">
-                            {{this.timer.minutes}} : {{this.timer.seconds}} min
+                    </div>
+
+                    <div class="divider mx-auto"></div>
+
+                    <div>
+                        <b-progress class="w-100" :value="timer.progress" max="600" variant="primary" height="8px"></b-progress>
+                        <p class="timer mt-2 font-weight-bold" id="time" :class="{'text-danger': timer.diff<=0 }">
+                            {{this.timer.minutes}} min {{this.timer.seconds}} sec min left
                         </p>
-                    </div>
-                
-                    <div id="bnomics-order-expired-wrapper" v-else>
-                        <h3 class="warning bnomics-status-warning">Order Expired</h3><br>
-                        <p class="click-to-try-again cursor-pointer"><a onClick="window.location.reload()">Click here to try again</a></p>
-                    </div>
+                    </div> 
+                </b-col>
+                <b-col id="bnomics-order-expired-wrapper" v-else>
+                    <h3 class="text-danger">Order Expired</h3><br>
+                    <p>
+                        Your order has expired.
+                        <a href="#" @click.prevent="reloadPage">
+                            Click here to try again
+                        </a>
+                    </p>
                 </b-col>
             </template>
             <template v-else>
-                <b-col xs="12" md="12" xl="12" class="text-center mx-auto" v-if="payment_verification.loading || !payment_verification.order || payment_verification.order.status_of_transaction < 2">
+                <b-col xs="12" md="12" xl="12" class="text-center mx-auto" v-if="payment_verification.loading || !payment_verification.order || payment_verification.order.status_of_transaction == -1">
                     <div class="mb-3">
                         <font-awesome-icon :icon="spinnerIcon" spin size="3x" />
                     </div> 
@@ -85,13 +114,13 @@
                 </b-col>
                 <b-col xs="12" md="12" xl="12" class="text-center mx-auto" v-else>
                     <template v-if="payment_verification.order.is_payment_complete">
-                        <div class="mb-3 text-success">
-                            <font-awesome-icon :icon="checkCircleIcon" size="3x" />
+                        <div class="mb-3">
+                            <img :src="require('@/assets/images/tick.gif')" />
                         </div> 
                         <h3 class="text-success">Your Order is confirmed!</h3>
-                        <p>We've received your payment. To download the files please click the link below</p>
+                        <p>We've received your payment. You'll be redirected automatically.</p>
                         <router-link :to="{name: 'order', params: {order_uid: order.uid}}">
-                            <b-button>Download Now</b-button>
+                            Click here if you're not redirected automatically.
                         </router-link>
                     </template>
                     <template v-else>
@@ -109,9 +138,15 @@
 </template>
 
 <script>
-import { faCheckCircle, faSpinner, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
+import { faCheckCircle, faExclamationTriangle, faSpinner, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 import send_request from '../utils/requests'
+
+import CustomReadInput from "@/components/CustomReadInput"
+
 export default {
+    components: {
+        CustomReadInput,
+    },
     data() {
         return {
             order_uid: null,
@@ -164,6 +199,26 @@ export default {
             }
         }
     },
+    computed: {
+        qr_url() {
+            if(!this.order) return ""
+            return `https://www.bitcoinqrcodemaker.com/api/?style=${this.qr_mappings[this.order.crypto]}&address=${this.order.address}&amount=${this.order.expected_value}&color=1`
+        },
+        payment_deeplink() {
+            if(!this.order) return ""
+        
+            return `${this.deeplink_mappings[this.order.crypto]}:${this.order.address}?amount=${this.order.expected_value}`
+        },
+        spinnerIcon: () => faSpinner,
+        checkCircleIcon: () => faCheckCircle,
+        failedIcon: () => faTimesCircle,
+        hexagonDangerIcon: () => faExclamationTriangle,
+        public_url() {
+            if(!this.order_uid) return null
+
+            return window.location.protocol + "//" + window.location.host + "/checkout/" + this.order_uid
+        }
+    },
     mounted() {
         this.$store.dispatch('updateSidebarState', false)
 
@@ -179,25 +234,6 @@ export default {
         //   if(newV == oldV) return
         //   this.load_crypto_converstion_rates()
         // }
-    },
-    computed: {
-        qr_url() {
-            if(!this.order) return ""
-            return `https://www.bitcoinqrcodemaker.com/api/?style=${this.qr_mappings[this.order.crypto]}&address=${this.order.address}&amount=${this.order.expected_value}&color=1`
-        },
-        payment_deeplink() {
-            if(!this.order) return ""
-      
-            return `${this.deeplink_mappings[this.order.crypto]}:${this.order.address}?amount=${this.order.expected_value}`
-        },
-        spinnerIcon: () => faSpinner,
-        checkCircleIcon: () => faCheckCircle,
-        failedIcon: () => faTimesCircle,
-        public_url() {
-            if(!this.order_uid) return null
-
-            return window.location.protocol + "//" + window.location.host + "/checkout/" + this.order_uid
-        }
     },
     methods: {
         
@@ -221,12 +257,18 @@ export default {
             )
         },
         init() {
+            this.$store.dispatch('updateHeaderTitle', this.order.product.product_name)
+            this.$store.dispatch('updateHeaderSide', `Order #${this.order.uid}`)
+
             if(this.order.status_of_transaction > -1) {
                 this.payment_verification.enabled = true
                 this.payment_verification.loading = false
                 this.payment_verification.order = this.order
-                if(this.order.status_of_transaction != 2) {
+                if(this.order.status_of_transaction == -1) {
+                    // Allow Uncofirmed Downloads as long as transaction is received by PG
                     this.verify_payment_status()
+                } else {
+                    this.order_complete()
                 }
 
             } else {
@@ -234,6 +276,9 @@ export default {
                 this.initializeSocket()
             }
             this.loading = false
+        },
+        order_complete() {
+            setTimeout(() => this.$router.push({name: 'order', params: {order_uid: this.order.uid}}), 2000)
         },
         startTimer() {
             if(this.timer_interval) clearInterval(this.timer_interval)
@@ -286,6 +331,8 @@ export default {
             }
         },
         verify_payment_status() {
+            if(!this.payment_verification.enabled) return
+            
             this.payment_verification.loading = true
             send_request({
                 method: 'GET',
@@ -295,17 +342,17 @@ export default {
                     this.payment_verification.order = res
                     switch(res.status_of_transaction) {
                         case -1:
-                        case 0:
-                        case 1:
                             // Awaiting Confirmation from Server
                             // Payment status is unconfirmed
                             // Payment is Partially Confirmed
                             setTimeout(this.verify_payment_status, 4000)
                         break
+                        case 0:
+                        case 1:
                         case 2:
                             //  Payment is Confirmed
                             this.payment_verification.loading = false
-                            // do other stuff
+                            this.order_complete()
                     }
                     this.payment_verification.loading = false
                 },
@@ -333,7 +380,27 @@ export default {
 </script>
 
 <style lang="scss">
+
+    @import "@/scss/colors";
+
     .btn-disabled-translucent {
         background-color: rgba(0,0,0,0.1);
+    }
+    .checkout-container {
+        border: 1px solid #000;
+        padding: 30px 40px; 
+        border-radius: 10px;
+
+        &.no-border {
+            border: 0;
+        }
+    }
+
+    .divider {
+        width: 40px;
+        height: 2px;
+        background-color: #000;
+        margin-top: 40px;
+        margin-bottom: 40px;
     }
 </style>

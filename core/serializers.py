@@ -6,19 +6,25 @@ from .models import Product, File, Order, Withdrawl
 
 class FileSerializer(serializers.ModelSerializer):
 
+    file_size = SerializerMethodField()
+
     class Meta:
         model = File
-        fields = ['uid', 'file_name']
+        fields = ['uid', 'file_name', 'file_size']
+
+    def get_file_size(self, obj: File):
+        return len(obj.file_data)
 
 class ProductSerializer(serializers.ModelSerializer):
 
     num_files = SerializerMethodField()
+    files = FileSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
         fields = [
             "currency", "price", "product_name", 
-            "product_description", "num_files"
+            "product_description", "num_files", "files"
         ]
 
     def get_num_files(self, obj: Product):
@@ -48,7 +54,7 @@ class ProductSensitiveSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
 
     product_uid = SerializerMethodField()
-    product = SerializerMethodField()
+    product = ProductSerializer(read_only=True)
 
     class Meta:
         model = Order
@@ -60,12 +66,6 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def get_product_uid(self, obj):
         return obj.product.uid
-    
-    def get_product(self, obj: Order):
-        if obj.status_of_transaction != obj.StatusChoices.CONFIRMED:
-            return None
-        
-        return ProductSerializer(instance=obj.product).data
     
 class WithdrawlSerializer(serializers.ModelSerializer):
 

@@ -308,36 +308,36 @@ class ProductWithdrawlsListAPIView(AnonymousView, generics.ListAPIView, ProductT
         return self.model.objects.filter(product=product)
 
 
-# class CurrencyConverterAPIView(AnonymousView):
+class CurrencyConverterAPIView(AnonymousView):
 
-#     def post(self, *args, **kwargs):
+    def post(self, *args, **kwargs):
 
-#         currency = self.request.data.get('currency', 'USD')
-#         price = self.request.data.get('price')
-#         crypto = self.request.data.get('crypto')
+        currency = self.request.data.get('currency', 'USD')
+        price = self.request.data.get('price')
+        crypto = self.request.data.get('crypto')
 
-#         self.check_supported_currency(currency)
-#         self.check_supported_crypto(crypto)
+        self.check_supported_currency(currency)
+        self.check_supported_crypto(crypto)
         
-#         if price == None:
-#             raise self.MissingParametersError(fields=['price', ])
+        if price == None:
+            raise self.MissingParametersError(fields=['price', ])
 
-#         try:
-#             price = float(price)
-#         except ValueError:
-#             return Response({
-#                 "error": {
-#                     "price": ["Must be a valid value.", ]
-#                 }
-#             }, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            price = float(price)
+        except ValueError:
+            return Response({
+                "error": {
+                    "price": ["Must be a valid value.", ]
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
         
-#         bits = exchanged_rate(price, crypto, currency)
-#         converted_price = bits/pow(10, 8)
+        bits = exchanged_rate(price, crypto, currency)
+        converted_price = bits/pow(10, 8)
 
-#         return Response({
-#             "bits": bits,
-#             "price": converted_price
-#         })
+        return Response({
+            "bits": bits,
+            "price": converted_price
+        })
 
 class InitiateProductBuyAPIView(AnonymousView):
 

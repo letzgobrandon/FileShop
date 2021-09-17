@@ -9,7 +9,7 @@ export const apiendpoints = {
     product_withdraw: `${API_BASE}/product/:token/withdrawl`,
     product_get_withdrawls: `${API_BASE}/product/:token/withdrawls`,
     product_seller_email_update: `${API_BASE}/email_updates`,
-    // currency_converter: `${API_BASE}/currency-converter`,
+    currency_converter: `${API_BASE}/currency-converter`,
     order_create: `${API_BASE}/order`,
     order_get: `${API_BASE}/order/:order_uid`,
     order_callback: `${API_BASE}/order/:order_uid/callback`,

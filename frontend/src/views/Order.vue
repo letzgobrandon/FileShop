@@ -6,50 +6,80 @@
             </b-col>
         </b-row>
         <b-row no-gutters v-else>
-            <template v-if="order.status_of_transaction == 2 && order.is_payment_complete">
-                <b-col xs="12" md="12" xl="12">
-                    <b-col cols="12" md="12">
-                        <img class="card-img-top" :src="require('@/assets/images/product_placeholder.png')" alt="Card Image Cap">
-                    </b-col>
-                    <b-col cols="12" md="12" class="px-4 py-2">
-                        <h5 class="card-title">
-                            {{ order.product.name || "No Name" }}
-                        </h5>
-                        <p class="card-text">
-                            {{ order.product.product_description || "No Description" }}
-                        </p>
-                        <p class="d-flex align-items-center">
-                            <strong>Total files: </strong> 
-                            {{ order.product.num_files || 0 }}
-                            <a :href="download_url" target="_blank">
-                                <b-button size="sm" class="ml-3">Download Files</b-button>
-                            </a>
-                        </p>
-                        <p class="text-left">
-                            <b-form-group
-                                label="Save the link below to come back to this page:"
-                                label-for="order-url"
-                            >
-                                <b-input-group>
-                                    <template #append>
-                                        <b-button variant="info" @click="copy('order-url')">
-                                            Copy to Clipboard
-                                            <img id="copy-content" :src="require('@/assets/images/copy_white.png')" width=20px height=20px alt="Copy to clipboard">
-                                        </b-button>
-                                    </template>
-                                    <b-form-input
-                                        id="order-url"
-                                        :value="public_url"
-                                        placeholder="Public URL"
-                                        readonly
-                                    ></b-form-input>
-                                </b-input-group>
-                            </b-form-group>
-                        </p>
-                    </b-col>
-                    <b-col cols="12" md="12" class="px-4 py-2 text-left d-flex">
+            <template v-if="order.status_of_transaction > -1 && order.is_payment_complete">
+                <b-alert show variant="success" class="mx-auto">
+                    <font-awesome-icon :icon="checkCircleIcon" class="mr-2" /> Payment Successful
+                </b-alert>
+                <b-col cols="12" md="12" class="px-4 py-2">
+                    <h5 class="card-title text-underline">
+                        Overview
+                    </h5>
+                    <div class="overview-table" v-if="!loading">
+                        <b-table-simple
+                            class="mt-3 text-center" 
+                            responsive
+                        >
+                            <template #table-busy>
+                                <div class="text-center text-primary my-2">
+                                    <b-spinner class="align-middle"></b-spinner>
+                                    <strong class="d-block">Loading</strong>
+                                </div>
+                            </template>
 
-                    </b-col>
+                            <b-tbody>
+                                <b-tr v-for="(data, index) in order.product.files" :key="index">
+                                    <!-- Icon -->
+                                    <b-td>
+                                        <FileIcon :name="data.file_name" />
+                                    </b-td>
+
+                                    <!-- File Name -->
+                                    <b-td class="text-left text-capitalize">
+                                        {{ data.file_name }}
+                                    </b-td>
+
+                                    <!-- Size -->
+                                    <b-td>
+                                        <BytesToHuman :bytes="data.file_size" />
+                                    </b-td>
+                                </b-tr>
+                            </b-tbody>
+                        </b-table-simple>
+                    </div>
+                </b-col>
+                
+                <b-col cols="12" md="12" class="px-4 py-2">
+                    <b-row no-gutters>
+                        <b-col cols="12" md="6" class="text-center">
+                            <h5 class="card-title text-underline">
+                                Total Files
+                            </h5>
+                            <h5>
+                                <template v-if="loading">
+                                    Loading...
+                                </template>
+                                <template v-else>
+                                    {{ order.product.num_files || 0 }}
+                                </template>
+                            </h5>
+                        </b-col>
+                        <b-col cols="12" md="6" class="text-center">
+                            <h5 class="card-title text-underline">
+                                Total Size
+                            </h5>
+                            <h5>
+                                <BytesToHuman :bytes="order.product.files.reduce((p, c) => p + c.file_size, 0)" />
+                            </h5>
+                        </b-col>
+                    </b-row>
+                </b-col>
+                <b-col cols="12" md="12" class="px-4 py-2 text-center">
+                    <a :href="download_url" target="_blank">
+                        <b-button pill variant="primary" class="font-weight-bold">
+                            <font-awesome-icon :icon="downloadIcon" class="mr-2"/>
+                            Download Files
+                        </b-button>
+                    </a>
                 </b-col>
             </template>
             <template v-else>
@@ -64,7 +94,16 @@
 
 <script>
 import send_request from '../utils/requests'
+
+import BytesToHuman from "@/components/BytesToHuman"
+import FileIcon from "@/components/FileIcon"
+import { faCheckCircle, faDownload } from '@fortawesome/free-solid-svg-icons'
+
 export default {
+    components: {
+        BytesToHuman,
+        FileIcon
+    },
     data() {
         return {
             order_uid: null,
@@ -82,7 +121,9 @@ export default {
         download_url() {
             if(!this.order) return ""
             return this.$store.state.static_urls.download_url.replace(":order_uid", this.order.uid)
-        }
+        },
+        checkCircleIcon: () => faCheckCircle,
+        downloadIcon: () => faDownload
     },
     mounted() {
         this.$store.dispatch('updateSidebarState', false)
@@ -115,6 +156,9 @@ export default {
             )
         },
         init() {
+            this.$store.dispatch('updateHeaderTitle', this.order.product.product_name)
+            this.$store.dispatch('updateHeaderSide', `Order #${this.order.uid}`)
+            
             this.loading = false
         },
         copy(id) {
@@ -123,3 +167,16 @@ export default {
     }
 }
 </script>
+<style lang="scss">
+
+    @import '@/scss/colors.scss';
+
+    .overview-table {
+        border: 1px solid $primary-color;
+        border-radius: 20px;
+
+        .table th, .table td {
+            border-top: none;
+        }
+    }
+</style>

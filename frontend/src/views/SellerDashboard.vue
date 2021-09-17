@@ -1,6 +1,9 @@
 <template>
     <div>
-        <template v-if="!loading">
+        <template v-if="loading">
+            <h3 class="text-center">Loading.. Please Wait..</h3>
+        </template>
+        <template v-else>
             <b-row>
                 <b-col cols="12" md="7" lg="7">
                     <b-tabs content-class="mt-3">
@@ -20,7 +23,7 @@
                     <b-row no-gutters>
                         <b-col>
                             <div class="mb-3">
-                                <h5 class="d-inline">
+                                <h5 class="d-inline text-underline">
                                     "{{ product.product_name || "Public" }}" URL:
                                 </h5>
                                 <b-badge pill variant="primary" class="float-right">
@@ -41,7 +44,7 @@
                     <b-row no-gutters class="mt-3">
                         <b-col>
                             <div class="mb-3">
-                                <h5 class="d-inline">
+                                <h5 class="d-inline text-underline">
                                     Balances
                                 </h5>
                             </div>
@@ -67,10 +70,10 @@
                             </div>
                         </b-col>
                     </b-row>
-                    <b-row no-gutters class="mt-3">
+                    <b-row no-gutters class="mt-5">
                         <b-col cols="12">
                             <div class="mb-3">
-                                <h5 class="d-inline">
+                                <h5 class="d-inline text-underline">
                                     Keep Access to your dashboard:
                                 </h5>
                             </div>
@@ -179,6 +182,8 @@ export default {
                     this.product = res
                     this.loading = false
                     this.$store.dispatch("updateSiteTitle", `${res.product_name} | Seller Dashboard` || "Seller Dashboard")
+                    this.$store.dispatch('updateHeaderTitle', `FileShop Dashboard: ${res.product_name}`)
+                    this.$store.dispatch('updateHeaderSide', null)
                     this.get_balances()
                 },
                 () => {

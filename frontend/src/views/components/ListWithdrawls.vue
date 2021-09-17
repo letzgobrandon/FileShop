@@ -7,6 +7,9 @@
             class="mt-3 text-center" 
             outlined
             sticky-header
+            show-empty
+            empty-text="No entries yet. Share you product and start selling."
+            empty-filtered-text="No entries yet. Share you product and start selling."
         >
             <template #table-busy>
                 <div class="text-center text-primary my-2">
@@ -57,6 +60,7 @@
             size="sm"
             pills
             align="center"
+            v-if="total_results > filters.limit"
         ></b-pagination>
     </div>
 </template>

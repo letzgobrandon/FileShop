@@ -27,13 +27,17 @@ const routes = [
             cols: {
               md: 12
             }
-          }
+          },
+          header: 'sub'
         }
       },
       {
         path: '/product/:product_uid',
         name: 'product',
-        component: () => import("../views/Product.vue")
+        component: () => import("../views/Product.vue"),
+        meta: {
+          header: 'sub'
+        }
       },
       {
         path: '/checkout/:order_uid',
@@ -42,16 +46,25 @@ const routes = [
         meta: {
           layout: {
             cols: {
-              md: 12
+              md: 7
             }
-          }
+          },
+          header: 'sub'
         }
       },
       {
         path: '/order/:order_uid',
         name: 'order',
         component: () => import("../views/Order.vue"),
+        meta: {
+          header: 'sub'
+        }
       },
+      {
+        path: '*',
+        name: 'page-404',
+        component: () => import("../views/404.vue"),
+      }
     ]
   },
 ]

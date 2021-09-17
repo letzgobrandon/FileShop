@@ -4,5 +4,11 @@ export default {
     },
     updateSiteTitle(t, value) {
         document.title = `${value} | FileShop`
+    },
+    updateHeaderTitle({commit}, value) {
+        commit('UPDATE_HEADER_TITLE', value)
+    },
+    updateHeaderSide({commit}, value) {
+        commit('UPDATE_HEADER_SIDE', value)
     }
 }

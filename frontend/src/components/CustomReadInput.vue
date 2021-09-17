@@ -2,7 +2,7 @@
     <b-form-group
         :label="label"
         :label-for="id"
-        class="mb-0"
+        class="mb-0 custom-read-input"
     >
         <b-input-group>
             <template #append>
@@ -19,9 +19,10 @@
             </template>
             <b-form-input
                 :id="id"
-                :value="value"
+                :value="display_value ? display_value : value"
                 :placeholder="placeholder"
                 readonly
+                :class="{'variant-light': variant == 'light', 'text-center': text_center}"
             ></b-form-input>
         </b-input-group>
     </b-form-group>
@@ -37,6 +38,10 @@ export default {
             type: String,
         },
         value: {
+            required: false,
+            type: String
+        },
+        display_value: {
             required: false,
             type: String
         },
@@ -67,6 +72,16 @@ export default {
             required: false,
             default: false,
             type: Boolean
+        },
+        variant: {
+            required: false,
+            type: String,
+            default: 'normal',
+        },
+        text_center: {
+            required: false,
+            type: Boolean,
+            default: false
         }
     },
     computed: {
@@ -75,8 +90,25 @@ export default {
     },
     methods: {
         do_copy() {
-            this.$copy_text(this.id, this)
+            if(this.display_value)
+                this.$copy_arbitary_text(this.value, this)
+            else
+                this.$copy_text(this.id, this)
         }
     }
 }
 </script>
+
+<style lang="scss">
+    @import "@/scss/colors";
+
+    .custom-read-input {
+        .variant-light {
+            background-color: #fff;
+            border-color: $primary-color !important;
+            border-width: 2px;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+    }
+</style>

@@ -1,5 +1,10 @@
 <template>
-    <a class="bitcoin-button" href="#" :class="{'btc': variant == 'btc', 'bch': variant == 'bch', 'no-right': hide_right}" @click="() => hide_right?false:$emit('input')">
+    <a 
+        class="bitcoin-button" 
+        href="#" 
+        :class="{'btc': variant == 'btc', 'bch': variant == 'bch', 'no-right': hide_right, 'disabled': disabled}" 
+        @click="() => hide_right || disabled ?false:$emit('input')"
+    >
         <div class="bitcoin-button--icon">
             <font-awesome-icon :icon="bitcoinIcon" size="2x" />
         </div>
@@ -46,7 +51,12 @@ export default {
             required: false,
             type: Boolean,
             default: false
-        }
+        },
+        disabled: {
+            required: false,
+            type: Boolean,
+            default: false
+        },
     },
     computed: {
         bitcoinIcon: () => faBitcoin,
@@ -124,13 +134,29 @@ export default {
         &.bch &--icon,
         &.bch &--right, 
         &.bch &--left {
-            background-color: #0ac18e;
+            background-color: #08a176;
         }
         &.btc:hover &--right{
             background-color: #bb7116;
         }
         &.bch:hover &--right{
             background-color: #08a176;
+        }
+        &.btc.disabled {
+            cursor: not-allowed;
+        }
+        &.btc.disabled &--icon,
+        &.btc.disabled &--right, 
+        &.btc.disabled &--left  {
+            background-color: #f5b86e;
+        }
+        &.bch.disabled {
+            cursor: not-allowed;
+        }
+        &.bch.disabled &--icon,
+        &.bch.disabled &--right, 
+        &.bch.disabled &--left  {
+            background-color: #62bea4;
         }
     }
 </style>

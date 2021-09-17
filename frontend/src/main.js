@@ -24,7 +24,7 @@ Vue.prototype.$copy_text = (id, vue_instance=null) => {
   document.execCommand("copy");
 
   if(vue_instance) {
-    vue_instance.$bvToast.toast('URL Copied Succesfully!', {
+    vue_instance.$bvToast.toast('Copied Succesfully!', {
       title: 'Success',
       ...store.state.common_toast_options,
     })
@@ -52,7 +52,7 @@ Vue.prototype.$copy_arbitary_text = (value, vue_instance=null) => {
   inserted_field.remove()
 
   if(vue_instance) {
-    vue_instance.$bvToast.toast('URL Copied Succesfully!', {
+    vue_instance.$bvToast.toast('Copied Succesfully!', {
       title: 'Success',
       ...store.state.common_toast_options,
     })
