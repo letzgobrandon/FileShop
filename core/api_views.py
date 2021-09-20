@@ -189,27 +189,27 @@ class ProductAPIView(AnonymousView, generics.RetrieveAPIView, generics.UpdateAPI
         if not self.request.data.get('email'):
             return
 
-        # product = self.get_object()
+        product = self.get_object()
 
-        # track_uri = self.request.build_absolute_uri(
-        #     reverse("core:product_info_seller", kwargs={"token": product.token})
-        # )
+        track_uri = self.request.build_absolute_uri(
+            reverse("core:product_info_seller", kwargs={"token": product.token})
+        )
 
-        # extra_email_context = {
-        #     "track_uri": track_uri,
-        #     "public_uri": self.request.build_absolute_uri(
-        #         reverse("core:product_info_buyer", kwargs={"uid": product.uid})
-        #     )
-        # }
+        extra_email_context = {
+            "track_uri": track_uri,
+            "public_uri": self.request.build_absolute_uri(
+                reverse("core:product_info_buyer", kwargs={"uid": product.uid})
+            )
+        }
 
-        # email_helper(
-        #     self.request,
-        #     product.email,
-        #     self.email_subject,
-        #     self.email_template,
-        #     html_email_template_name=self.email_template,
-        #     extra_email_context=extra_email_context,
-        # )
+        email_helper(
+            self.request,
+            product.email,
+            self.email_subject,
+            self.email_template,
+            html_email_template_name=self.email_template,
+            extra_email_context=extra_email_context,
+        )
 
     def retrieve(self, request, *args, **kwargs):
         response = super().retrieve(request, *args, **kwargs)
