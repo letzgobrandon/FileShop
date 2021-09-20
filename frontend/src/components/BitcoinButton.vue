@@ -13,7 +13,7 @@
                 <font-awesome-icon :icon="spinnerIcon" size="1x" spin />
             </template>
             <template v-else>
-                &thickapprox; {{ amount }}
+                <template v-if="show_approx">&thickapprox;</template> {{ amount }} <template v-if="show_symbol">{{ variant.toUpperCase() }}</template>
             </template>
         </div>
         <div class="bitcoin-button--right" v-if="!hide_right">
@@ -62,6 +62,16 @@ export default {
             type: Boolean,
             default: false
         },
+        show_approx: {
+            required: false,
+            type: Boolean,
+            default: true
+        },
+        show_symbol: {
+            required: false,
+            type: Boolean,
+            default: true
+        }
     },
     computed: {
         bitcoinIcon: () => faBitcoin,

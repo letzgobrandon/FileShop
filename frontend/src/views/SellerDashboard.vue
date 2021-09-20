@@ -57,6 +57,8 @@
                                     @input="do_withdraw('btc')"
                                     :hide_right="!balances.data.btc || balances.data.btc <= 0"
                                     :loading="this.balances.loading"
+                                    :show_approx="false"
+                                    :show_label="true"
                                 />
                                 <BitcoinButton 
                                     v-if="!$store.state.options.disable_bch"
@@ -67,6 +69,8 @@
                                     @input="do_withdraw('btc')"
                                     :hide_right="!balances.data.bch || balances.data.bch <= 0"
                                     :loading="this.balances.loading"
+                                    :show_approx="false"
+                                    :show_label="true"
                                 />
                             </div>
                         </b-col>
