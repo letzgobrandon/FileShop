@@ -28,7 +28,10 @@ def exchanged_rate_to_usd(amount, crypto, currency) -> float:
 def create_order(product, crypto):
     url = f"{base_url}/new_address"
     response = requests.post(url, headers=headers)
-    if response.status_code not in [200, 207]:
+    if response.status_code not in range(200, 299):
+        if response.status_code in range(400, 499):
+            response.raise_for_status()
+        
         try:
             data = response.json()
             error = "[%s] %s (Status %s)" % (data.get('error_code', 'UNKNOWN_CODE'), data.get('message', "No Error Message"), data.get('status', response.status_code))
