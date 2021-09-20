@@ -267,12 +267,22 @@ export default {
                     // let order_uid = res.order_uuid
                     // window.location.href = `/${static_urls.checkout.replace(':order_uuid', order_uid)}`
                 },
-                () => {
-                    this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
-                        ...this.$store.state.common_toast_options,
-                        title: 'Error',
-                        variant: 'danger'
-                    })
+                (err) => {
+                    if(err.response) {
+                        if(err.response.status == 500 && typeof err.response.data == "object" && err.response.data.error && err.response.data.error.api) {
+                            this.$bvToast.toast(`API Error: ${err.response.data.error.api.join(",")} `, {
+                                ...this.$store.state.common_toast_options,
+                                title: 'Error',
+                                variant: 'danger'
+                            })
+                        } else {
+                            this.$bvToast.toast('An Unknown Error Occurred. Please Try Again!', {
+                                ...this.$store.state.common_toast_options,
+                                title: 'Error',
+                                variant: 'danger'
+                            })
+                        }
+                    }
                     this.buying_info.loading = false
                 }
             )

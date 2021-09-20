@@ -1,8 +1,7 @@
+import requests
 from django.conf import settings
-from django.shortcuts import get_object_or_404, reverse
-from django.core.validators import validate_email
-from django.core.exceptions import PermissionDenied, ValidationError
-from requests.api import request
+from django.shortcuts import reverse
+from django.core.exceptions import PermissionDenied
 
 from rest_framework import generics, status, filters
 from rest_framework.permissions import AllowAny
@@ -17,7 +16,7 @@ from .models import Product, File, Order, Withdrawl
 from .constants import SUPPORTED_CRYPTOS, SUPPORTED_CURRENCIES
 from .serializers import ProductSerializer, OrderSerializer, ProductSensitiveSerializer, WithdrawlSerializer, OrderSensitiveSerializer
 from .utils import email_helper, create_order_helper
-from .blockonomics_utils import exchanged_rate
+from .blockonomics_utils import BlockonomicsAPIError
 
 class AnonymousView(APIView):
 
@@ -355,7 +354,14 @@ class InitiateProductBuyAPIView(AnonymousView):
         crypto = self.request.data.get('crypto', 'BTC')
         self.check_supported_crypto(crypto)
 
-        order: Order = create_order_helper(self.request, product, crypto, product.price)
+        try:
+            order: Order = create_order_helper(self.request, product, crypto, product.price)
+        except (requests.HTTPError, BlockonomicsAPIError) as e:
+            return Response({
+                "error": {
+                    "api": [str(e), ]
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response({
             "order_uuid": order.uid,
