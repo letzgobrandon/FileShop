@@ -105,13 +105,13 @@ class Order(models.Model):
         choices=StatusChoices.choices, default=StatusChoices.NOT_STARTED
     )
     expected_value: Optional[float] = models.DecimalField(
-        null=True, decimal_places=10, max_digits=65
+        null=True, decimal_places=10, max_digits=20
     )
     usd_price: Optional[float] = models.DecimalField(
-        null=True, decimal_places=10, max_digits=65
+        null=True, decimal_places=10, max_digits=20
     )
     received_value: Optional[float] = models.DecimalField(
-        blank=True, null=True, decimal_places=10, max_digits=65
+        blank=True, null=True, decimal_places=10, max_digits=20
     )
     txid: Optional[str] = models.TextField(null=True)
     address: str = models.CharField(null=True, unique=True, max_length=100)
@@ -161,7 +161,7 @@ class Withdrawl(models.Model):
     address: str = models.TextField()
 
     amount: float = models.DecimalField(
-        decimal_places=10, max_digits=65
+        decimal_places=10, max_digits=20
     )
 
     status: str = models.CharField(max_length=1, choices=StatusChoices.choices, default=StatusChoices.PENDING)
