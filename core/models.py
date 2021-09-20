@@ -114,7 +114,7 @@ class Order(models.Model):
         blank=True, null=True, decimal_places=10, max_digits=65
     )
     txid: Optional[str] = models.TextField(null=True)
-    address: str = models.TextField(null=True, unique=True)
+    address: str = models.CharField(null=True, unique=True, max_length=100)
     product: Product = models.ForeignKey(
         Product, related_name="orders", on_delete=models.CASCADE
     )
