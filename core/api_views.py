@@ -154,6 +154,7 @@ class ProductAPIView(AnonymousView, generics.RetrieveAPIView, generics.UpdateAPI
     model = Product
     queryset = model.objects.all()
     email_template = "emails/product_page.html"
+    email_subject = "emails/product_page.txt"
 
     def get_serializer_class(self):
         if (self.request.method == 'GET' and self.request.query_params.get('token') != None) or \
