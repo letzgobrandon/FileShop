@@ -38,11 +38,13 @@ if (process.env.NODE_ENV === 'production') {
         }
     })
     var refreshing;
-    navigator.serviceWorker.addEventListener("controllerchange", function() {
-        console.log("Activating new version")
-        if(refreshing) return
-
-        window.location.reload()
-        refreshing = true
-    })
+    if(window.location.protocol == "https:") {
+        navigator.serviceWorker.addEventListener("controllerchange", function() {
+            console.log("Activating new version")
+            if(refreshing) return
+    
+            window.location.reload()
+            refreshing = true
+        })
+    }
 }
