@@ -1,4 +1,4 @@
-const BASE = (process.env.NODE_ENV == 'production')?"http://api.fileshop.online":"http://localhost:8000"
+const BASE = (process.env.NODE_ENV == 'production')?"https://api.fileshop.online":"http://localhost:8000"
 const API_BASE = `${BASE}/api`
 
 export const apiendpoints = {
