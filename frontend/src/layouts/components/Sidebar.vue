@@ -37,20 +37,16 @@
                     </b-button>
                 </a>
             </div>
-            <div id="sidebar-handle" slot="footer">
+            <a id="sidebar-handle" slot="footer" href="#" @click.prevent="$store.dispatch('updateSidebarState', false)">
                 <template v-if="$store.state.sidebar_visible">
-                    <a href="#" @click.prevent="$store.dispatch('updateSidebarState', false)">
-                        <font-awesome-icon :icon="closeIcon" />
-                    </a>
+                    <font-awesome-icon :icon="closeIcon" />
                 </template>
-            </div>
-        </b-sidebar>
-        <div id="sidebar-open" v-if="!$store.state.sidebar_visible">
-            <a href="#" @click.prevent="$store.dispatch('updateSidebarState', true)">
-                <font-awesome-icon :icon="openIcon" />
-                ABOUT
             </a>
-        </div>
+        </b-sidebar>
+        <a id="sidebar-open" v-if="!$store.state.sidebar_visible" href="#" @click.prevent="$store.dispatch('updateSidebarState', true)">
+            <font-awesome-icon :icon="openIcon" />
+            ABOUT
+        </a>
     </div>
 </template>
 
