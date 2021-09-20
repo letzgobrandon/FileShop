@@ -159,6 +159,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20
 }
 
+DEPLOYMENT_URL = 'http://localhost:8080'
+
 # Load Local Settings
 try:
     from .local_settings import *

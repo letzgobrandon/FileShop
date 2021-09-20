@@ -191,15 +191,9 @@ class ProductAPIView(AnonymousView, generics.RetrieveAPIView, generics.UpdateAPI
 
         product = self.get_object()
 
-        track_uri = self.request.build_absolute_uri(
-            reverse("core:product_info_seller", kwargs={"token": product.token})
-        )
-
         extra_email_context = {
-            "track_uri": track_uri,
-            "public_uri": self.request.build_absolute_uri(
-                reverse("core:product_info_buyer", kwargs={"uid": product.uid})
-            )
+            "track_uri": product.get_seller_dashboard_url(),
+            "public_uri": product.get_public_url()
         }
 
         email_helper(

@@ -1,12 +1,13 @@
-from django.db import models
 import uuid
+from django.conf import settings
+from django.db import models
 from uuid import UUID
 from typing import Optional, Dict
-from .constants import CURRENCY_CHOICES
 from django.utils.crypto import get_random_string
-from hitcount.models import HitCount, HitCountMixin
 from django.contrib.contenttypes.fields import GenericRelation
+from hitcount.models import HitCount, HitCountMixin
 
+from .constants import CURRENCY_CHOICES
 # Create your models here.
 
 
@@ -47,6 +48,12 @@ class Product(models.Model, HitCountMixin):
     @property
     def product_files(self):
         return File.objects.filter(product=self)
+    
+    def get_seller_dashboard_url(self):
+        return "%s/dashboard/%s/%s" % (settings.DEPLOYMENT_URL, self.uid, self.token)
+    
+    def get_public_url(self):
+        return "%s/product/%s" % (settings.DEPLOYMENT_URL, self.uid)
     
     def get_balance(self, crypto) -> float:
         pay_dict: Optional[Dict] = self.orders.filter(
