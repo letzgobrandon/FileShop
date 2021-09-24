@@ -19,21 +19,13 @@
                 <p>
                     You can host/fork your own version of fileshop having different features to earn income.
                 </p>
-                <a href="#" target="_blank">
+                <a href="https://github.com/blockonomics/FileShop" target="_blank">
                     <b-button 
                         pill
                         class="btn-theme"
                     >
                         <font-awesome-icon :icon="githubIcon" class="mr-1"/>
                         Fork GitHub
-                    </b-button>
-                </a>
-                <a href="mailto:" class="ml-2">
-                    <b-button 
-                        pill
-                        class="btn-theme"
-                    >
-                        <font-awesome-icon :icon="mailIcon" />
                     </b-button>
                 </a>
             </div>
