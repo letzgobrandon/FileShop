@@ -10,7 +10,7 @@
                         Loading...
                     </template>
                     <template v-else>
-                        {{ product.product_description || "No Description" }}
+                        <span v-html="convertToHtml(product.product_description, 'No Descripton')"></span>
                     </template>
                 </p>
             </b-col>
@@ -286,6 +286,11 @@ export default {
                     this.buying_info.loading = false
                 }
             )
+        },
+        convertToHtml(str, defaultText) {
+            if(!str) return defaultText
+
+            return str.replace(/\n/g, "<br />");
         }
     }
 }
