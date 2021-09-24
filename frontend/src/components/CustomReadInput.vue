@@ -10,12 +10,12 @@
                     <template v-if="!icon_only">Copy to Clipboard </template>
                     <font-awesome-icon :icon="copyIcon" />
                 </b-button>
-                <b-button variant="primary" :disabled="disabled" v-if="external">
-                    <a :href="value" target="_blank" class="text-white">
+                <a :href="value" target="_blank" class="text-white" v-if="external">
+                    <b-button variant="primary" :disabled="disabled">
                         <template v-if="!icon_only">Open </template>
                         <font-awesome-icon :icon="externalIcon" />
-                    </a>
-                </b-button>
+                    </b-button>
+                </a>
             </template>
             <b-form-input
                 :id="id"
