@@ -58,7 +58,7 @@
                     <div>
                         <b-progress class="w-100" :value="timer.progress" max="600" variant="primary" height="8px"></b-progress>
                         <p class="timer mt-2 font-weight-bold" id="time" :class="{'text-danger': timer.diff<=0 }">
-                            {{this.timer.minutes}} min {{this.timer.seconds}} sec min left
+                            {{this.timer.minutes}} min {{this.timer.seconds}} sec left
                         </p>
                     </div> 
                 </b-col>
