@@ -3,46 +3,15 @@ from . import views, api_views
 
 app_name = "core"
 urlpatterns = [
-    path("", views.ProductCreateView.as_view(), name="product_create_view"),
     re_path(
         r"^dashboard/(?P<token>[0-9a-f-]+)$",
         views.ProductSellerView.as_view(),
         name="product_info_seller",
     ),
     re_path(
-        r"^dashboard/email_updates$",
-        views.ProductEmailUpdatesView.as_view(),
-        name="product_seller_email_updates",
-    ),
-    re_path(
-        r"^product/(?P<uid>[0-9a-f-]+)/$",
-        views.ProductPublicView.as_view(),
-        name="product_info_buyer",
-    ),
-    re_path(
-        r"^checkout/(?P<order_uid>[0-9a-f-]+)$",
-        views.IntializeOrder.as_view(),
-        name="product_pay_buyer",
-    ),
-    re_path(
-        r"^order_processed/$",
-        views.OrderConfirmCallbackView.as_view(),
-        name="order_processed_buyer",
-    ),
-    re_path(
-        r"^order/(?P<order_uid>[0-9a-f-]+)/$",
-        views.OrderStatusView.as_view(),
-        name="order_info_buyer",
-    ),
-    re_path(
-        r"^(?P<order_id>\w+)/download/$",
+        r"^order/(?P<order_uid>[0-9a-f-]+)/download/$",
         views.DownloadFiles.as_view(),
         name="product_download_buyer",
-    ),
-    path(
-        "update/orders",
-        views.UpdateOrderStatusCallback.as_view(),
-        name="order_status_update",
     ),
 
     ## API URLs Start ##
@@ -58,6 +27,26 @@ urlpatterns = [
         name="api_product",
     ),
     re_path(
+        r"^api/product/(?P<token>[0-9a-f-]+)/orders$",
+        api_views.ProductOrdersListAPIView.as_view(),
+        name="api_product_orders",
+    ),
+    re_path(
+        r"^api/product/(?P<token>[0-9a-f-]+)/balances$",
+        api_views.ProductBalancesAPIView.as_view(),
+        name="api_product_balances",
+    ),
+    re_path(
+        r"^api/product/(?P<token>[0-9a-f-]+)/withdrawls$",
+        api_views.ProductWithdrawlsListAPIView.as_view(),
+        name="api_product_withdrawls",
+    ),
+    re_path(
+        r"^api/product/(?P<token>[0-9a-f-]+)/withdrawl$",
+        api_views.ProductWithdrawAPIView.as_view(),
+        name="api_product_withdrawl",
+    ),
+    re_path(
         r"^api/order$",
         api_views.InitiateProductBuyAPIView.as_view(),
         name="api_product_order",
@@ -68,9 +57,9 @@ urlpatterns = [
         name="api_order",
     ),
     re_path(
-        r"^api/order/(?P<uid>[0-9a-f-]+)/callback$",
-        api_views.OrderConfirmCallbackAPIView.as_view(),
-        name="api_order_callback",
+        r"^api/order/callback/$",
+        api_views.OrderCallbackView.as_view(),
+        name="api_order_blockonomics_callback",
     ),
     # re_path(
     #     r"^api/currency-converter$",

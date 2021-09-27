@@ -135,28 +135,33 @@ This API is used to get the details of a order.
 
 Does not accept any parameters.
 
-# /api/order/:uid/callback
+# /api/order/callback
 
-**Reversable Name:** `core:api_order_callback`
+This endpoint serves as a callback URL for Blockonomics Store to notify the status of transaction.
 
-**Depended Models:** `core.models.Order`
+**Reversable Name:** `core:api_order_blockonomics_callback`
 
-**Supported Methods:** POST
+**Depended Models:** core.models.Order
 
-## POST
+**Supported Methods:** GET
 
-This API is used to get the details of a order. 
+## GET
+
+**Request Body**
 
 | Param               | Type             | Required | Description                                         | Example                        |
 |---------------------|------------------|----------|-----------------------------------------------------|--------------------------------|
-| status        | Integer           | Yes       | Status of the Order, Choices: Not Started (-1), Unconfirmed (0), PARTIAL_CONFIRMED (1), CONFIRMED (2) | 2 |
-
+| secret        | String           | Yes       | Fraud Prevent Secret Token as defined in settings.CALLBACK_SECRET | sdsdett4534g34rtf4 |
+| txid       | String           | Yes       | Transaction ID |  |
+| value        | Float           | Yes       | Received Value of Crypto | 123 |
+| status        | Integer           | Yes       | Status of Transaction, valid range: [0,2] | 2 |
+| addr        | String           | Yes       | BTC address of the transaction | dwrr237y329yc923tr923 |
 
 **Response**
 
-Status Code: 200: Empty Response
+Status Code: 200, 
 
-Status Code: 400: Contains Error related to Status Transistion
+Returns Empty Response on 200, or Error Message on 403
 
 # /api/currency-converter 
 
@@ -229,11 +234,12 @@ Status Code: 200
 | Param               | Type             | Description                                         | Example                        |
 |---------------------|------------------|-----------------------------------------------------|--------------------------------|
 | uid        | String (UUID)        | UUID of the Order                              |      |
-| status_of_transaction | Integer (Choices)           | Status of Order, Choices: NOT_STARTED (-1), UNCONFIRMED (0), PARTIAL_CONFIRMED (1), CONFIMED (2)                          | -1 |
+| status_of_transaction | Integer (Choices)           | Status of Order, Choices: NOT_STARTED (-1), UNCONFIRMED (0), PARTIAL_CONFIRMED (1), CONFIRMED (2)                          | -1 |
 | expected_value               | Float            | Expected Price to recevie in selected crypto           | 0.0000012                             |
 | usd_price            | Float | Price in USD for Order | 20                            |
 | received_value           | Float            | Actual Received Price in selected crypto           | 0.0000012                             |
 | address           | String            | Payment Address           | sd87g389rv723y9r362vt92357v                             |
 | crypto           | String            | Crypto used to create the order           | BTC |
-| order_id           | String            | Order ID of the Order           | sdsfd23vetb36nb5 |
 | timestamp | Datetime | Date Time when the Order was last modified (ISO8601 Format) | 2000-10-31T01:30:00.000-05:00 | 
+| product_uid           | String            | Product UID of the Order           | sdsfd23vetb36nb5 |
+| product           | Object -> Product            | Product Object or None (if status_of_transaction != 2) | sdsfd23vetb36nb5 |

@@ -1,0 +1,253 @@
+@import 'colors';
+
+/** Bootstrap Overrides **/
+
+.input-group-append {
+    margin-left: -4px;
+}
+
+.form-control {
+ 
+    .custom-select {
+        transition: border-color 0.5s;
+        border-color: rgb(29, 29, 29);
+
+        &:hover, &:focus {
+            border-color: $primary-color !important;
+            outline: 0;
+            box-shadow: none !important;
+        }
+    }
+
+    &:focus, &:hover {
+        border-color: $primary-color !important;
+        outline: 0;
+        box-shadow: none !important;
+    }
+}
+
+.alert-danger {
+    background-color: #FEE2E2 !important;
+    border-color: #FEE2E2 !important;
+    color: $danger-color !important;
+}
+
+/** Common **/
+
+.btn-theme {
+    font-weight: 500 !important;
+    transition: 0.5s all !important;
+
+    background-color: $primary-color !important;
+    opacity: 0.9;
+
+    &:hover {
+        background-color: $primary-color !important;
+        opacity: 1;
+    }
+}
+
+.text-underline {
+    text-decoration: underline;
+}
+
+
+.text-custom-orange {
+    color: #f79a28;
+}
+
+.text-custom-green {
+    color: #33cba1;
+}
+
+/** Sidebar **/
+#sidebar {
+    background: #f1ecff !important;
+    text-align: center;
+    
+    h3 {
+        font-weight: 400;
+    }
+    p {
+        text-align: left;
+        font-weight: 400;
+    }
+    .sidebar-logo {
+        height: 52px;
+    }
+
+    .sidebar-seperator {
+        max-width: 90%;
+        border-top: 2px solid rgba(0,0,0,0.6);
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    .sidebar-list {
+        list-style: none;
+        padding: 0;
+        margin: 0
+    }
+
+    .sidebar-list-item a {
+        color: rgba(0,0,0,0.6);
+        transition: color 0.5s;
+        text-decoration: none;
+        font-size: 20px;
+    }
+
+    .sidebar-list-item a:hover {
+        color: rgba(0,0,0,1);
+    }
+
+    .b-sidebar-body {
+        position: relative;
+    }
+
+    &.b-sidebar-right > .b-sidebar-header .close {
+        margin-left: auto;
+        margin-right: 0!important;
+    }
+}
+
+#sidebar-handle, #sidebar-open {
+    top: 10%;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    width: 2em;
+    background-color: #f1ecff;
+    display: none;
+    // height: 150px;
+    word-wrap: break-word;
+    text-align: center;
+
+    color: #7646ff !important;
+    text-decoration: none;
+
+    @media all and (min-width: 768px) {
+        display: block;
+    }
+}
+#sidebar-handle {
+    position: absolute;
+    right: -1.5em;
+}
+
+#sidebar-open {
+    position: fixed;
+    left: 0;
+    font-weight: bold;
+}
+
+.container {
+    transition: padding-left 0.5s;
+    padding-left: 0;
+    &.sidebar-visible {
+        @media all and (min-width: 768px) {
+            padding-left: 240px;
+        }
+    }
+}
+
+/** header **/
+.header {
+    .header-main {
+        display: none;
+    
+        .logo {
+            height: 60px;
+        }
+        
+        .logo-sub {
+            font-weight: 500;
+        }
+    
+        @media all and (min-width: 768px) {
+            display: flex;
+        }
+    
+        transition: padding-left 0.5s;
+        &.sidebar-visible {
+            padding-left: 240px;
+        }
+    } 
+
+    .header-mobile {
+        display: flex;
+        padding-top: 20px;
+        padding-bottom: 10px;
+        background-color: #F1ECFF;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        z-index: 99;
+    
+        .logo {
+            height: 30px;
+        }
+        
+        .logo-sub {
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+    
+        .menu-button {
+            color: #000000;
+            text-decoration: none;
+        }
+    
+        @media all and (min-width: 768px) {
+            display: none;
+        }
+    } 
+
+    &.layout {
+        &--sub {
+            background-color: #f1ecff;
+            padding-top: 10px;
+            padding-bottom: 10px;
+
+            .header-main {
+
+                .logo-sub {
+                    color: $primary-color;
+                    font-weight: 700;
+                    font-size: 1.4em;
+                }
+                .logo-side {
+                    color: $primary-color;
+                    font-weight: 700;
+                    justify-self: flex-end;
+                }
+            }
+        }
+    }
+}
+
+body {
+    background-color: #fff;
+    color: black;
+    text-align: center;
+}
+
+#preloader {
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    top: 0;
+    left: 0;
+    background-color: #fff;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    transition: 2s all;
+
+    .preloader-text {
+        text-transform: uppercase;
+    }
+}

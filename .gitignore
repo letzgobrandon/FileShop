@@ -8,3 +8,4 @@ db.sqlite3
 **/migrations/*
 satoshi_box/.env
 satoshi_box_uwsgi.ini
+local_settings.py

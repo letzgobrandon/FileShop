@@ -1,19 +1,22 @@
-from django.shortcuts import get_object_or_404, reverse
-from django.core.validators import validate_email
-from django.core.exceptions import PermissionDenied, ValidationError
-from requests.api import request
+import requests
+from django.conf import settings
+from django.shortcuts import reverse
+from django.core.exceptions import PermissionDenied
 
-from rest_framework import generics, status
+from rest_framework import generics, status, filters
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, APIException
 
-from .models import Product, File, Order
+from hitcount.models import HitCount
+from hitcount.views import HitCountMixin
+
+from .models import Product, File, Order, Withdrawl
 from .constants import SUPPORTED_CRYPTOS, SUPPORTED_CURRENCIES
-from .serializers import ProductSerializer, OrderSerializer, ProductSensitiveSerializer
+from .serializers import ProductSerializer, OrderSerializer, ProductSensitiveSerializer, WithdrawlSerializer, OrderSensitiveSerializer
 from .utils import email_helper, create_order_helper
-from .blockonomics_utils import exchanged_rate
+from .blockonomics_utils import BlockonomicsAPIError
 
 class AnonymousView(APIView):
 
@@ -146,11 +149,12 @@ class ProductCreateAPIView(AnonymousView, generics.CreateAPIView):
 
         return Response(data=data, status=status.HTTP_201_CREATED)
 
-class ProductAPIView(generics.RetrieveAPIView, generics.UpdateAPIView):
+class ProductAPIView(AnonymousView, generics.RetrieveAPIView, generics.UpdateAPIView, HitCountMixin):
 
     model = Product
     queryset = model.objects.all()
     email_template = "emails/product_page.html"
+    email_subject = "emails/product_page.txt"
 
     def get_serializer_class(self):
         if (self.request.method == 'GET' and self.request.query_params.get('token') != None) or \
@@ -188,15 +192,9 @@ class ProductAPIView(generics.RetrieveAPIView, generics.UpdateAPIView):
 
         product = self.get_object()
 
-        track_uri = self.request.build_absolute_uri(
-            reverse("core:product_info_seller", kwargs={"token": product.token})
-        )
-
         extra_email_context = {
-            "track_uri": track_uri,
-            "public_uri": self.request.build_absolute_uri(
-                reverse("core:product_info_buyer", kwargs={"uid": product.uid})
-            )
+            "track_uri": product.get_seller_dashboard_url(),
+            "public_uri": product.get_public_url()
         }
 
         email_helper(
@@ -207,6 +205,15 @@ class ProductAPIView(generics.RetrieveAPIView, generics.UpdateAPIView):
             html_email_template_name=self.email_template,
             extra_email_context=extra_email_context,
         )
+
+    def retrieve(self, request, *args, **kwargs):
+        response = super().retrieve(request, *args, **kwargs)
+        if self.request.query_params.get('token') == None:
+            instance: Product = self.get_object()
+            hit_count = HitCount.objects.get_for_object(instance)
+            self.hit_count(self.request, hit_count)
+
+        return response
     
     def update(self, *args, **kwargs):
 
@@ -223,6 +230,76 @@ class ProductAPIView(generics.RetrieveAPIView, generics.UpdateAPIView):
             self.check_email()
         
         return response
+
+class ProductTokenMixin(object):
+
+    def get_product(self) -> Product:
+        try:
+            return Product.objects.get(token=self.kwargs['token'])
+        except Product.DoesNotExist:
+            raise NotFound("Product not found")
+    
+
+class ProductOrdersListAPIView(AnonymousView, generics.ListAPIView, ProductTokenMixin):
+
+    model = Order
+    serializer_class = OrderSensitiveSerializer
+
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = ['timestamp', 'txid', 'uid']
+    ordering = ['-timestamp', ]
+    search_fields = ['txid', 'addr', 'uid']
+    
+    def get_queryset(self):
+        product = self.get_product()
+        return self.model.objects.filter(product=product)
+
+class ProductBalancesAPIView(AnonymousView, ProductTokenMixin):
+
+    def get(self, *args, **kwargs):
+
+        product = self.get_product()
+
+        data = {}
+
+        for crypto in SUPPORTED_CRYPTOS:
+            data[crypto.lower()] = product.get_balance(crypto)
+        
+        return Response(data)
+
+class ProductWithdrawAPIView(AnonymousView, ProductTokenMixin):
+
+    def post(self, *args, **kwargs):
+
+        product = self.get_product()
+
+        addr = self.request.data.get('address')
+        crypto = self.request.data.get('crypto')
+
+        if not addr:
+            raise self.MissingParametersError(fields=['address', ])
+        self.check_supported_crypto(crypto)
+        crypto = crypto.upper()
+        
+        withdrawl: Withdrawl = product.request_withdrawl(crypto, addr)
+
+        return Response({
+            "uid": withdrawl.uid
+        })
+
+class ProductWithdrawlsListAPIView(AnonymousView, generics.ListAPIView, ProductTokenMixin):
+
+    model = Withdrawl
+    serializer_class = WithdrawlSerializer
+
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = ['created_on', 'modified_on', 'address', 'txid', 'uid']
+    ordering = ['-created_on', ]
+    search_fields = ['txid', 'address', 'uid']
+    
+    def get_queryset(self):
+        product = self.get_product()
+        return self.model.objects.filter(product=product)
 
 
 # class CurrencyConverterAPIView(AnonymousView):
@@ -272,7 +349,14 @@ class InitiateProductBuyAPIView(AnonymousView):
         crypto = self.request.data.get('crypto', 'BTC')
         self.check_supported_crypto(crypto)
 
-        order: Order = create_order_helper(self.request, product, crypto, product.price)
+        try:
+            order: Order = create_order_helper(self.request, product, crypto, product.price)
+        except (requests.HTTPError, BlockonomicsAPIError) as e:
+            return Response({
+                "error": {
+                    "api": [str(e), ]
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response({
             "order_uuid": order.uid,
@@ -289,27 +373,67 @@ class OrderAPIView(AnonymousView, generics.RetrieveAPIView):
             return self.get_queryset().get(uid=self.kwargs['uid'])
         except self.model.DoesNotExist:
             raise NotFound("Order Not Found")
-
-class OrderConfirmCallbackAPIView(AnonymousView):
-
-    def post(self, *args, **kwargs):
         
-        status_of_transaction = self.request.data.get("status", None)
-        if not status_of_transaction:
-            raise self.MissingParametersError(fields=['status_of_transaction', ])
+    
+    # def patch(self, *args, **kwargs):
 
-        order = get_object_or_404(Order, uid=kwargs['uid'])
+    #     serializer = self.get_serializer(data=self.request.data, partial=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
 
-        if status_of_transaction >= order.status_of_transaction:
+    #     return Response()
+
+
+class OrderCallbackView(AnonymousView):
+
+    email_template = "emails/payment.html"
+    email_subject = "emails/product_page.txt"
+    extra_email_context = {}
+
+    def get(self, *args, **kwargs):
+
+        secret = settings.CALLBACK_SECRET
+
+        secret_from_request = self.request.query_params.get('secret')
+
+        if secret != secret_from_request:
+            raise PermissionDenied("Invalid Request")
+        
+        txid = self.request.query_params.get('txid')
+        value = self.request.query_params.get('value', 0)
+        status = int(self.request.query_params.get('status', -1))
+        addr = self.request.query_params.get('addr')
+
+        try:
+            order: Order = Order.objects.get(address=addr)
+        except Order.DoesNotExist:
+            raise PermissionDenied("Invalid Address")
+
+        if status >= order.status_of_transaction:
             order.status_of_transaction = max(
-                order.status_of_transaction, status_of_transaction
+                order.status_of_transaction, status
             )
+            order.received_value = float(value)/1e8
+            order.txid = txid
             order.save()
+
+            if order.status_of_transaction == order.StatusChoices.CONFIRMED:
+                self.extra_email_context["track_uri"] = self.request.build_absolute_uri(
+                    reverse(
+                        "core:product_info_seller", kwargs={"token": order.product.token}
+                    )
+                )
+                if order.product.email:
+                    email_helper(
+                        request,
+                        order.product.email,
+                        self.email_subject,
+                        self.email_template,
+                        html_email_template_name=self.email_template,
+                        extra_email_context=self.extra_email_context,
+                    )
 
             return Response()
 
-        return Response({
-            "error": {
-                "status": ["Order status wasn't changed.", ]
-            }
-        }, status=status.HTTP_400_BAD_REQUEST)
+        return PermissionDenied("Status cannot be updated at this stage")
+    

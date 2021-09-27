@@ -42,14 +42,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
     'hitcount',
     'rest_framework',
+    'corsheaders',
+
+    'core',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -135,3 +140,29 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = os.environ.get("SERVER_EMAIL") 
 EMAIL_HOST_PASSWORD = os.environ.get("SERVER_EMAIL_PASSWORD")
 EMAIL_PORT = 587
+
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?:\/\/localhost(:[0-9]{1,4})?$"
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+]
+
+CALLBACK_SECRET = os.environ.get('CALLBACK_SECRET')
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 20
+}
+
+DEPLOYMENT_URL = 'http://localhost:8080'
+
+# Load Local Settings
+try:
+    from .local_settings import *
+except ImportError as e:
+    pass
