@@ -1,35 +1,17 @@
 ## Overview
 Website/marketplace to sell files anonymously and receive BTC or BCH.
 
-## Requirements
-Make sure you have [Python](https://www.python.org/downloads/) and [Pip](https://pip.pypa.io/en/latest/installing/#installing-with-get-pip-py) installed. Python version >= 3.6 is required.
+The application has two aspects:
+1. API Server (Built over Django 3)
+2. Frontend (Built over Vue 2)
 
-You also need Django, and other dependencies. These can be installed by running:
+### API Server
+API Server is built over Django 3 and Python 3.6+. Follow the instructions in [API Server Installation](docs/backend/installation.md) to setup the API Server
 
-```
-pip install -r requirements.txt 
-```
-### Variables
+### Frontend
+Frontend of the application is build over Vue 2 with Vue-Bootstrap. Follow the instructions in [Frontend Installation](docs/frontend/installation.md) to setup, compile and deploy your Frontend.
 
-After you have installed the packages mentioned above, update the `SECRET_KEY` [here](https://github.com/cnohall/SatoshiBox/blob/master/satoshi_box/settings.py#L28). The [Secret Key](https://docs.djangoproject.com/en/dev/ref/settings/#secret-key) is required to sign the app, Django will refuse to start if `SECRET_KEY` is not set. This [website](https://miniwebtool.com/django-secret-key-generator/) can be used to generate a unique `SECRET_KEY`. 
 
-The `BLOCKONOMICS_API_KEY`, `EMAIL_HOST_USER`, and `EMAIL_HOST_PASSWORD` should be specified [here](https://github.com/cnohall/SatoshiBox/blob/master/satoshi_box/settings.py#L130-L135), with your own values. If you do not have a `BLOCKONOMICS_API_KEY`, you can obtain one by signing up [here](https://www.blockonomics.co/register#/). 
-
-To get the payment websocket to work, change [this line](https://github.com/blockonomics/FileShop/blob/4e0eab5d282da5ecbe15427325d66e51c9bd8bee/core/static/js/paymentSocket.js#L7) to `const websiteUrl = "http://127.0.0.1:8000";` for testing it locally and `const websiteUrl = <yourWebsiteURL>;` for servers.
-
-### Setting up Database
-
-After you have defined the variables mentioned above, nativate to your FileShop folder with your terminal and run:
-```
-python manage.py migrate
-python manage.py makemigrations
-python manage.py migrate
-```
-### Running server
-Lastly, you can start the server by running:
-```
-python manage.py runserver 8080
-```
 ## Business Model
 Hosting and running the project can be good revenue source. Owner of website can earn revenue by charging commision from sellers while withdraw. Various features/enhancement can be added by any developer to differentiate their marketplace. 
 
