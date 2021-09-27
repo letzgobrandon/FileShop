@@ -25,7 +25,7 @@ Add/Update the `SECRET_KEY` variable. The [Secret Key](https://docs.djangoprojec
 
 Add/Update the `BLOCKONOMICS_API_KEY` variable. The API Key can be received from your [Merchant Store Dashboard](https://www.blockonomics.co/merchants#/stores)
 
-Add/Update the `CALLBACK_SECRET` variable. This secret is used to validate the callbacks from Blockonmomics Server.
+Add/Update the `CALLBACK_SECRET` variable. This secret is used to validate the callbacks from Blockonmomics Server. You can choose any random long word to be `CALLBACK_SECRET` 
 
 Blockonomics Callback URL will be `<protocol>//<your_domain>/api/order/callback/?secret=<your_CALLBACK_SECRET>` e.g. `https://api.example.com/api/order/callback/?secret=1234567899`
 
