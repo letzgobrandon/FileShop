@@ -27,7 +27,13 @@ def exchanged_rate_to_usd(amount, crypto, currency) -> float:
 
 def create_order(product, crypto):
     url = f"{base_url}/new_address"
-    response = requests.post(url, headers=headers)
+    params = None
+    if settings.BLOCKONOMICS_API_MATCH_ACCOUNT:
+        params = {
+            "match_account": settings.BLOCKONOMICS_API_MATCH_ACCOUNT
+        }
+    
+    response = requests.post(url, headers=headers, params=params)
     if response.status_code not in range(200, 299):
         if response.status_code in range(400, 499):
             response.raise_for_status()
