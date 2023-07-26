@@ -2,7 +2,7 @@ alabaster==0.7.12
 asgiref==3.3.4
 Babel==2.9.0
 bootstrap-py==1.0.2
-certifi==2020.12.5
+certifi==2023.7.22
 chardet==4.0.0
 defusedxml==0.7.1
 Django==3.2
